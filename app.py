@@ -22,12 +22,17 @@ def read_json(json_name):
         return jsonify({"code": "异常", "message": "{}".format(e)})
 
 
+def after_request(resp):
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
+
+
 if __name__ == "__main__":
     try:
-        with open("./config.json",'r') as f:
+        with open("./config.json", 'r') as f:
             config = json.load(f)
             port = config['port']
     except:
         print("获取配置出错")
+    app.after_request(after_request)
     app.run(debug=False, host='0.0.0.0', port=port)
-
