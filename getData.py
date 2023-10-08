@@ -1,19 +1,26 @@
 import json
 import os
 import time
+from shutil import copy
 
 import schedule
 import requests
 import urllib3
 
 
-def getbasedb(url):
+def getbaseurldb(url):
+    print("远程链接")
     urllib3.disable_warnings()
     if os.access("./db.json", os.F_OK):
         os.remove("./db.json")
     file = requests.get(url, allow_redirects=True, verify=False)
     open("./db.json", 'wb').write(file.content)
     processdata()
+
+
+def getbaselocaldb(url):
+    print("本地链接")
+    copy(url, './db.json')
 
 
 def processdata():
@@ -98,8 +105,15 @@ if __name__ == "__main__":
             interval = config['interval']
     except:
         print("获取配置出错")
-    schedule.every(3).hours.do(getbasedb, url)
-    schedule.run_all()
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
+    if 'http' in url:
+        schedule.every(interval).hours.do(getbaseurldb, url)
+        schedule.run_all()
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
+    else:
+        schedule.every(interval).hours.do(getbaselocaldb, url)
+        schedule.run_all()
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
