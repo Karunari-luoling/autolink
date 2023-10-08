@@ -113,7 +113,7 @@ if __name__ == "__main__":
             schedule.run_pending()
             time.sleep(60)
     else:
-        schedule.every(interval).hours.do(getbaselocaldb, url)
+        schedule.every(interval).minutes.do(getbaselocaldb, url)
         schedule.run_all()
         while True:
             schedule.run_pending()
