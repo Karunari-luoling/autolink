@@ -17,7 +17,7 @@ def read_json(json_name):
     try:
         with open('./' + filename, encoding='utf-8') as f:
             autolink = json.load(f)
-            return jsonify(autolink)
+        return jsonify(autolink)
     except Exception as e:
         return jsonify({"code": "异常", "message": "{}".format(e)})
 
