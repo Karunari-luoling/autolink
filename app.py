@@ -2,8 +2,6 @@ import json
 
 from flask import Flask, jsonify, request
 
-from getData import getbasedb, defold
-
 app = Flask(__name__)
 
 
