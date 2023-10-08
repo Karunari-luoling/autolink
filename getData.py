@@ -21,6 +21,7 @@ def getbaseurldb(url):
 def getbaselocaldb(url):
     print("本地链接")
     copy(url, './db.json')
+    processdata()
 
 
 def processdata():
