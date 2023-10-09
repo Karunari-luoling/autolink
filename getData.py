@@ -93,7 +93,7 @@ def defold():
                 links.append(link)
         autolink = json.dumps(links, indent=4, ensure_ascii=False)
         fw.write(autolink)
-    # os.remove("./js_data.json")
+    os.remove("./js_data.json")
 
 
 if __name__ == "__main__":
