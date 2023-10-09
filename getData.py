@@ -73,14 +73,13 @@ def defold():
                 m += 1
                 if i['mail'] == j['mail'] and i['created'] == j['created']:
                     k += 1
-                    n += 1
                 elif i['mail'] == j['mail'] and i['created'] < j['created']:
                     json_data.append(j)
                 elif i['mail'] == j['mail'] and i['created'] > j['created']:
                     continue
                 else:
                     k += 1
-            if k == m and n == 1:
+            if k == m:
                 json_data.append(i)
             m, k = 0, 0
     autolink = json.dumps(json_data, indent=4, ensure_ascii=False)
@@ -94,7 +93,7 @@ def defold():
                 links.append(link)
         autolink = json.dumps(links, indent=4, ensure_ascii=False)
         fw.write(autolink)
-    os.remove("./js_data.json")
+    # os.remove("./js_data.json")
 
 
 if __name__ == "__main__":
@@ -107,7 +106,7 @@ if __name__ == "__main__":
     except:
         print("获取配置出错")
     if 'http' in url:
-        schedule.every(interval).hours.do(getbaseurldb, url)
+        schedule.every(interval).minutes.do(getbaseurldb, url)
         schedule.run_all()
         while True:
             schedule.run_pending()
