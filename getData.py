@@ -30,22 +30,23 @@ def processdata():
         if content['url'] == '/link/':
             if ' ' in content['comment']:
                 content['comment'] = content['comment'].replace(' ', '')
-            name = content['comment'].split("name:")[1].split("<br>avatar:")[0]
-            avatar = content['comment'].split('avatar:<ahref="')[1].split('">')[0]
-            descr = content['comment'].split("descr:")[1].split('<br>link:')[0]
-            link = content['comment'].split('link:<ahref="')[1].split('">')[0]
-            data = {
-                'mail': content['mail'],
-                'created': content['created'],
-                'name': name,
-                'avatar': avatar,
-                'descr': descr,
-                'link': link
-            }
-            with open("./js_data.json", 'a', encoding='utf-8') as fw:
-                autolink = json.dumps(data, indent=4, ensure_ascii=False)
-                fw.write(autolink + ',')
-                fw.write('\n')
+            if 'name' and 'avatar' and 'descr' and 'link' in content['comment']:
+                name = content['comment'].split("name:")[1].split("<br>avatar:")[0]
+                avatar = content['comment'].split('avatar:<ahref="')[1].split('">')[0]
+                descr = content['comment'].split("descr:")[1].split('<br>link:')[0]
+                link = content['comment'].split('link:<ahref="')[1].split('">')[0]
+                data = {
+                    'mail': content['mail'],
+                    'created': content['created'],
+                    'name': name,
+                    'avatar': avatar,
+                    'descr': descr,
+                    'link': link
+                }
+                with open("./js_data.json", 'a', encoding='utf-8') as fw:
+                    autolink = json.dumps(data, indent=4, ensure_ascii=False)
+                    fw.write(autolink + ',')
+                    fw.write('\n')
 
     with open("./js_data.json", 'r', encoding='utf-8') as fw:
         content = fw.read()
