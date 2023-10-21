@@ -1,5 +1,5 @@
 {
-  "url": "/root/twikoo/data/db.json.0",
+  "url": "./test/db.json.0",
   "port": 3000,
   "interval": 3
 }
