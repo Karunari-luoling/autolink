@@ -44,6 +44,8 @@ def processdata():
                     banlink = link.replace('https:', '').replace('/','')
                 if 'http://' in link:
                     banlink = link.replace('http:', '').replace('/','')
+                if 'github.io' in banurl and 'github.io' in banlink:
+                    continue
                 if banlink not in banurl:
                     data = {
                         'mail': content['mail'],
