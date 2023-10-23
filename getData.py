@@ -25,17 +25,23 @@ def getbaselocaldb(url):
 
 
 def processdata():
-    file_path = './js_data.json'
+    if os.path.exists('./autolink_back.json'):
+        os.remove('./autolink_back.json')
     basedata = {
         "partners": [],
         "dangerous": [],
         "failed": []
     }
-    if not os.path.exists(file_path):
-        with open(file_path, 'w', encoding='utf-8') as f:
+    if not os.path.exists('./js_data.json'):
+        with open('./js_data.json', 'w', encoding='utf-8') as f:
             json.dump(basedata, f)
+    if not os.path.exists('./autolink_back.json'):
+        with open('./autolink_back.json', 'w', encoding='utf-8') as f:
+            json.dump(basedata, f)
+
     if os.path.exists('./autolink.json'):
         os.remove('./autolink.json')
+
     with open("./ban.json", 'r', encoding='utf-8') as fw:
         banurl = fw.read()
         banurl = json.loads(banurl)
@@ -71,6 +77,11 @@ def processdata():
                     contents['partners'].append(data)
                     with open('./js_data.json', 'w', encoding='utf-8') as f:
                         json.dump(contents, f, indent=4, ensure_ascii=False)
+                    with open('./autolink_back.json', 'r', encoding='utf-8') as f:
+                        contents = json.load(f)
+                    contents['partners'].append(data)
+                    with open('./autolink_back.json', 'w', encoding='utf-8') as f:
+                        json.dump(contents, f, indent=4, ensure_ascii=False)
     if os.path.exists('./failed.json'):
         with open('./failed.json', 'r', encoding='utf-8') as f:
             failed = json.load(f)
@@ -93,6 +104,8 @@ def processdata():
 def defold():
     with open('./js_data.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
+    with open('./autolink_back.json', 'r', encoding='utf-8') as f:
+        data_back = json.load(f)
 
     def process_list(data, list_name):
         new_list = [item for item in data[list_name] if not any(
@@ -102,11 +115,12 @@ def defold():
     new_partners = process_list(data, 'partners')
     new_failed = process_list(data, 'failed')
     new_dangerous = process_list(data, 'dangerous')
+    new_partners_back = process_list(data_back, 'partners')
 
     data['partners'] = new_partners
     data['dangerous'] = new_dangerous
     data['failed'] = new_failed
-
+    data_back['partners'] = new_partners_back
     for item in data['failed']:
         if item in data['partners']:
             data['partners'].remove(item)
@@ -117,6 +131,8 @@ def defold():
             data['partners'].remove(item)
     with open('./autolink.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+    with open('./autolink_back.json', 'w', encoding='utf-8') as f:
+        json.dump(data_back, f, indent=4, ensure_ascii=False)
     os.remove("./js_data.json")
 
 
@@ -124,7 +140,7 @@ def is_website_alive():
     if os.path.exists('./failed.json'):
         os.remove('./failed.json')
     contents = []
-    with open('./autolink.json', encoding='utf-8') as f:
+    with open('./autolink_back.json', encoding='utf-8') as f:
         datas = json.load(f)
     links = []
     for key, value in datas.items():
@@ -143,7 +159,8 @@ def is_website_alive():
                     try:
                         response = requests.head(item['link'], allow_redirects=True, timeout=5)
                         if response.status_code == 200:
-                            print(item['link'] + '状态:' + str(response.status_code))
+                            #print(item['link'] + '状态:' + str(response.status_code))
+                            return True
                         else:
                             contents.append(data)
                             with open('./failed.json', 'w', encoding='utf-8') as f:
@@ -153,7 +170,6 @@ def is_website_alive():
                         contents.append(data)
                         with open('./failed.json', 'w', encoding='utf-8') as f:
                             json.dump(contents, f, indent=4, ensure_ascii=False)
-    print(links)
 
 
 def get_response_time():
@@ -162,7 +178,7 @@ def get_response_time():
     if os.path.exists('./failed.json'):
         os.remove('./failed.json')
     contents = []
-    with open('./autolink.json', encoding='utf-8') as f:
+    with open('./autolink_back.json', encoding='utf-8') as f:
         datas = json.load(f)
     links = []
     for key, value in datas.items():
@@ -180,14 +196,15 @@ def get_response_time():
                     }
                     try:
                         response = requests.get(url=item['link']).elapsed.total_seconds()
-                        print(item['link'] + '响应时间:' + str(response))  # 时间为秒
+                        #print(item['link'] + '响应时间:' + str(response))  # 时间为秒
                         if response > 5:
                             contents.append(data)
                             with open('./dangerous.json', 'w', encoding='utf-8') as f:
                                 json.dump(contents, f, indent=4, ensure_ascii=False)
                     except requests.exceptions.RequestException as e:
-                        print(f"Error occurred: {e}")
+                        #print(f"Error occurred: {e}")
                         contents.append(data)
+                        print(contents)
                         with open('./failed.json', 'w', encoding='utf-8') as f:
                             json.dump(contents, f, indent=4, ensure_ascii=False)
 
