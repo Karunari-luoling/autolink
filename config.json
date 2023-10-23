@@ -1,5 +1,7 @@
 {
   "url": "./test/db.json.0",
   "port": 3000,
-  "interval": 3
+  "fentch_interval": 30,
+  "dangerous_interval": 24,
+  "failed_interval":6
 }

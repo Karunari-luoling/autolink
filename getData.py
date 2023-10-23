@@ -1,8 +1,8 @@
 import json
 import os
 import time
+from multiprocessing import Process
 from shutil import copy
-
 import schedule
 import requests
 import urllib3
@@ -25,6 +25,17 @@ def getbaselocaldb(url):
 
 
 def processdata():
+    file_path = './js_data.json'
+    basedata = {
+        "partners": [],
+        "dangerous": [],
+        "failed": []
+    }
+    if not os.path.exists(file_path):
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(basedata, f)
+    if os.path.exists('./autolink.json'):
+        os.remove('./autolink.json')
     with open("./ban.json", 'r', encoding='utf-8') as fw:
         banurl = fw.read()
         banurl = json.loads(banurl)
@@ -41,9 +52,9 @@ def processdata():
                 descr = content['comment'].split("descr:")[1].split('<br>link:')[0]
                 link = content['comment'].split('link:<ahref="')[1].split('">')[0]
                 if 'https://' in link:
-                    banlink = link.replace('https:', '').replace('/','')
+                    banlink = link.replace('https:', '').replace('/', '')
                 if 'http://' in link:
-                    banlink = link.replace('http:', '').replace('/','')
+                    banlink = link.replace('http:', '').replace('/', '')
                 if 'github.io' in banurl and 'github.io' in banlink:
                     continue
                 if banlink not in banurl:
@@ -55,58 +66,130 @@ def processdata():
                         'descr': descr,
                         'link': link
                     }
-                    with open("./js_data.json", 'a', encoding='utf-8') as fw:
-                        autolink = json.dumps(data, indent=4, ensure_ascii=False)
-                        fw.write(autolink + ',')
-                        fw.write('\n')
-
-    with open("./js_data.json", 'r', encoding='utf-8') as fw:
-        content = fw.read()
-        if '[' in content:
-            content = content.replace("[", "")
-            content = content.replace("]", ",")
-            content = '[' + content + ']'
-            content = content.replace(",\n]", "]\n")
-        else:
-            content = '[' + content + ']'
-            content = content.replace(",\n]", "]\n")
-    with open("./js_data.json", 'w', encoding='utf-8') as fw:
-        fw.write(content)
+                    with open('./js_data.json', 'r', encoding='utf-8') as f:
+                        contents = json.load(f)
+                    contents['partners'].append(data)
+                    with open('./js_data.json', 'w', encoding='utf-8') as f:
+                        json.dump(contents, f, indent=4, ensure_ascii=False)
+    if os.path.exists('./failed.json'):
+        with open('./failed.json', 'r', encoding='utf-8') as f:
+            failed = json.load(f)
+        with open('./js_data.json', 'r', encoding='utf-8') as f:
+            contents = json.load(f)
+        contents['failed'] = failed
+        with open('./js_data.json', 'w', encoding='utf-8') as f:
+            json.dump(contents, f, indent=4, ensure_ascii=False)
+    if os.path.exists('./dangerous.json'):
+        with open('./dangerous.json', 'r', encoding='utf-8') as f:
+            dangerous = json.load(f)
+        with open('./js_data.json', 'r', encoding='utf-8') as f:
+            contents = json.load(f)
+        contents['dangerous'] = dangerous
+        with open('./js_data.json', 'w', encoding='utf-8') as f:
+            json.dump(contents, f, indent=4, ensure_ascii=False)
     defold()
 
 
 def defold():
-    json_data = []
-    k, m, n = 0, 0, 0
-    with open("./js_data.json", 'r', encoding='utf-8') as fw:
-        content = fw.read()
-        content = json.loads(content)
-        for i in content:
-            for j in content:
-                m += 1
-                if i['mail'] == j['mail'] and i['created'] == j['created']:
-                    k += 1
-                elif i['mail'] == j['mail'] and i['created'] < j['created']:
-                    json_data.append(j)
-                elif i['mail'] == j['mail'] and i['created'] > j['created']:
-                    continue
-                else:
-                    k += 1
-            if k == m:
-                json_data.append(i)
-            m, k = 0, 0
-    autolink = json.dumps(json_data, indent=4, ensure_ascii=False)
-    links = []
-    autolink = json.loads(autolink)
-    with open("./autolink.json", 'w', encoding='utf-8') as fw:
-        for link in autolink:
-            if link in links:
-                continue
-            else:
-                links.append(link)
-        autolink = json.dumps(links, indent=4, ensure_ascii=False)
-        fw.write(autolink)
+    with open('./js_data.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    def process_list(data, list_name):
+        new_list = [item for item in data[list_name] if not any(
+            other['mail'] == item['mail'] and other['created'] > item['created'] for other in data[list_name])]
+        return new_list
+
+    new_partners = process_list(data, 'partners')
+    new_failed = process_list(data, 'failed')
+    new_dangerous = process_list(data, 'dangerous')
+
+    data['partners'] = new_partners
+    data['dangerous'] = new_dangerous
+    data['failed'] = new_failed
+
+    for item in data['failed']:
+        if item in data['partners']:
+            data['partners'].remove(item)
+        if item in data['dangerous']:
+            data['dangerous'].remove(item)
+    for item in data['dangerous']:
+        if item in data['partners']:
+            data['partners'].remove(item)
+    with open('./autolink.json', 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
     os.remove("./js_data.json")
+
+
+def is_website_alive():
+    if os.path.exists('./failed.json'):
+        os.remove('./failed.json')
+    contents = []
+    with open('./autolink.json', encoding='utf-8') as f:
+        datas = json.load(f)
+    links = []
+    for key, value in datas.items():
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict) and 'link' in item:
+                    links.append(item['link'])
+                    data = {
+                        'mail': item['mail'],
+                        'created': item['created'],
+                        'name': item['name'],
+                        'avatar': item['avatar'],
+                        'descr': item['descr'],
+                        'link': item['link']
+                    }
+                    try:
+                        response = requests.head(item['link'], allow_redirects=True, timeout=5)
+                        if response.status_code == 200:
+                            print(item['link'] + '状态:' + str(response.status_code))
+                        else:
+                            contents.append(data)
+                            with open('./failed.json', 'w', encoding='utf-8') as f:
+                                json.dump(contents, f, indent=4, ensure_ascii=False)
+                    except requests.exceptions.RequestException as e:
+                        print(f"Error occurred: {e}")
+                        contents.append(data)
+                        with open('./failed.json', 'w', encoding='utf-8') as f:
+                            json.dump(contents, f, indent=4, ensure_ascii=False)
+    print(links)
+
+
+def get_response_time():
+    if os.path.exists('./dangerous.json'):
+        os.remove('./dangerous.json')
+    if os.path.exists('./failed.json'):
+        os.remove('./failed.json')
+    contents = []
+    with open('./autolink.json', encoding='utf-8') as f:
+        datas = json.load(f)
+    links = []
+    for key, value in datas.items():
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict) and 'link' in item:
+                    links.append(item['link'])
+                    data = {
+                        'mail': item['mail'],
+                        'created': item['created'],
+                        'name': item['name'],
+                        'avatar': item['avatar'],
+                        'descr': item['descr'],
+                        'link': item['link']
+                    }
+                    try:
+                        response = requests.get(url=item['link']).elapsed.total_seconds()
+                        print(item['link'] + '响应时间:' + str(response))  # 时间为秒
+                        if response > 5:
+                            contents.append(data)
+                            with open('./dangerous.json', 'w', encoding='utf-8') as f:
+                                json.dump(contents, f, indent=4, ensure_ascii=False)
+                    except requests.exceptions.RequestException as e:
+                        print(f"Error occurred: {e}")
+                        contents.append(data)
+                        with open('./failed.json', 'w', encoding='utf-8') as f:
+                            json.dump(contents, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
@@ -115,17 +198,23 @@ if __name__ == "__main__":
             config = json.load(f)
             url = config['url']
             port = config['port']
-            interval = config['interval']
+            fentch_interval = config['fentch_interval']
+            dangerous_interval = config["dangerous_interval"]
+            failed_interval = config["failed_interval"]
     except:
         print("获取配置出错")
     if 'http' in url:
-        schedule.every(interval).minutes.do(getbaseurldb, url)
+        schedule.every(fentch_interval).minutes.do(getbaseurldb, url)
+        schedule.every(failed_interval).hours.do(is_website_alive)
+        schedule.every(dangerous_interval).hours.do(get_response_time)
         schedule.run_all()
         while True:
             schedule.run_pending()
             time.sleep(60)
     else:
-        schedule.every(interval).minutes.do(getbaselocaldb, url)
+        schedule.every(fentch_interval).minutes.do(getbaselocaldb, url)
+        schedule.every(failed_interval).hours.do(is_website_alive)
+        schedule.every(dangerous_interval).hours.do(get_response_time)
         schedule.run_all()
         while True:
             schedule.run_pending()
