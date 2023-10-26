@@ -29,7 +29,7 @@ def after_request(resp):
 
 if __name__ == "__main__":
     try:
-        with open("config/config.json", 'r') as f:
+        with open("../config/config.json", 'r') as f:
             config = json.load(f)
             port = config['port']
     except:
