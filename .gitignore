@@ -1,6 +1,7 @@
 /autolink.json
-/db.json
+/config/db.json
 /.idea
 /test
 /js_data.json
-./config.json
+config/config.json
+/config/failed.json

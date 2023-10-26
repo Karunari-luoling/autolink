@@ -13,42 +13,42 @@ from datetime import datetime
 def getbaseurldb(url):
     print("远程链接")
     urllib3.disable_warnings()
-    if os.access("./db.json", os.F_OK):
-        os.remove("./db.json")
+    if os.access("config/db.json", os.F_OK):
+        os.remove("config/db.json")
     file = requests.get(url, allow_redirects=True, verify=False)
-    open("./db.json", 'wb').write(file.content)
+    open("config/db.json", 'wb').write(file.content)
     processdata()
 
 
 def getbaselocaldb(url):
     print("本地链接")
-    copy(url, './db.json')
+    copy(url, 'config/db.json')
     processdata()
 
 
 def processdata():
-    if os.path.exists('./autolink_back.json'):
-        os.remove('./autolink_back.json')
+    if os.path.exists('config/autolink_back.json'):
+        os.remove('config/autolink_back.json')
     basedata = {
         "partners": [],
         "dangerous": [],
         "failed": []
     }
-    if not os.path.exists('./js_data.json'):
-        with open('./js_data.json', 'w', encoding='utf-8') as f:
+    if not os.path.exists('config/js_data.json'):
+        with open('config/js_data.json', 'w', encoding='utf-8') as f:
             json.dump(basedata, f)
-    if not os.path.exists('./autolink_back.json'):
-        with open('./autolink_back.json', 'w', encoding='utf-8') as f:
+    if not os.path.exists('config/autolink_back.json'):
+        with open('config/autolink_back.json', 'w', encoding='utf-8') as f:
             json.dump(basedata, f)
 
     if os.path.exists('./autolink.json'):
         os.remove('./autolink.json')
 
-    with open("./custom.json", 'r', encoding='utf-8') as fw:
+    with open("config/custom.json", 'r', encoding='utf-8') as fw:
         banurl = fw.read()
         banurl = json.loads(banurl)['ban']
         banurl = ' '.join(map(str, banurl))
-    for line in open("./db.json", 'r', encoding='utf-8', errors='ignore'):
+    for line in open("config/db.json", 'r', encoding='utf-8', errors='ignore'):
         content = json.loads(line)
         if content['url'] == '/link/':
             if ' ' in content['comment']:
@@ -78,39 +78,39 @@ def processdata():
                         'link': link,
                         'siteshot': siteshot
                     }
-                    with open('./js_data.json', 'r', encoding='utf-8') as f:
+                    with open('config/js_data.json', 'r', encoding='utf-8') as f:
                         contents = json.load(f)
                     contents['partners'].append(data)
-                    with open('./js_data.json', 'w', encoding='utf-8') as f:
+                    with open('config/js_data.json', 'w', encoding='utf-8') as f:
                         json.dump(contents, f, indent=4, ensure_ascii=False)
-                    with open('./autolink_back.json', 'r', encoding='utf-8') as f:
+                    with open('config/autolink_back.json', 'r', encoding='utf-8') as f:
                         contents = json.load(f)
                     contents['partners'].append(data)
-                    with open('./autolink_back.json', 'w', encoding='utf-8') as f:
+                    with open('config/autolink_back.json', 'w', encoding='utf-8') as f:
                         json.dump(contents, f, indent=4, ensure_ascii=False)
-    if os.path.exists('./failed.json'):
-        with open('./failed.json', 'r', encoding='utf-8') as f:
+    if os.path.exists('config/failed.json'):
+        with open('config/failed.json', 'r', encoding='utf-8') as f:
             failed = json.load(f)
-        with open('./js_data.json', 'r', encoding='utf-8') as f:
+        with open('config/js_data.json', 'r', encoding='utf-8') as f:
             contents = json.load(f)
         contents['failed'] = failed
-        with open('./js_data.json', 'w', encoding='utf-8') as f:
+        with open('config/js_data.json', 'w', encoding='utf-8') as f:
             json.dump(contents, f, indent=4, ensure_ascii=False)
     if os.path.exists('./dangerous.json'):
-        with open('./dangerous.json', 'r', encoding='utf-8') as f:
+        with open('config/dangerous.json', 'r', encoding='utf-8') as f:
             dangerous = json.load(f)
-        with open('./js_data.json', 'r', encoding='utf-8') as f:
+        with open('config/js_data.json', 'r', encoding='utf-8') as f:
             contents = json.load(f)
         contents['dangerous'] = dangerous
-        with open('./js_data.json', 'w', encoding='utf-8') as f:
+        with open('config/js_data.json', 'w', encoding='utf-8') as f:
             json.dump(contents, f, indent=4, ensure_ascii=False)
     defold()
 
 
 def defold():
-    with open('./js_data.json', 'r', encoding='utf-8') as f:
+    with open('config/js_data.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
-    with open('./autolink_back.json', 'r', encoding='utf-8') as f:
+    with open('config/autolink_back.json', 'r', encoding='utf-8') as f:
         data_back = json.load(f)
 
     def process_list(data, list_name):
@@ -137,17 +137,17 @@ def defold():
             data['partners'].remove(item)
     with open('./autolink.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
-    with open('./autolink_back.json', 'w', encoding='utf-8') as f:
+    with open('config/autolink_back.json', 'w', encoding='utf-8') as f:
         json.dump(data_back, f, indent=4, ensure_ascii=False)
-    os.remove("./js_data.json")
+    os.remove("config/js_data.json")
     custom()
 
 
 def is_website_alive():
-    if os.path.exists('./failed.json'):
-        os.remove('./failed.json')
+    if os.path.exists('config/failed.json'):
+        os.remove('config/failed.json')
     contents = []
-    with open('./autolink_back.json', encoding='utf-8') as f:
+    with open('config/autolink_back.json', encoding='utf-8') as f:
         datas = json.load(f)
     links = []
     for key, value in datas.items():
@@ -170,22 +170,22 @@ def is_website_alive():
                             return True
                         else:
                             contents.append(data)
-                            with open('./failed.json', 'w', encoding='utf-8') as f:
+                            with open('config/failed.json', 'w', encoding='utf-8') as f:
                                 json.dump(contents, f, indent=4, ensure_ascii=False)
                     except requests.exceptions.RequestException as e:
                         print(f"Error occurred: {e}")
                         contents.append(data)
-                        with open('./failed.json', 'w', encoding='utf-8') as f:
+                        with open('config/failed.json', 'w', encoding='utf-8') as f:
                             json.dump(contents, f, indent=4, ensure_ascii=False)
 
 
 def get_response_time():
-    if os.path.exists('./dangerous.json'):
-        os.remove('./dangerous.json')
-    if os.path.exists('./failed.json'):
-        os.remove('./failed.json')
+    if os.path.exists('config/dangerous.json'):
+        os.remove('config/dangerous.json')
+    if os.path.exists('config/failed.json'):
+        os.remove('config/failed.json')
     contents = []
-    with open('./autolink_back.json', encoding='utf-8') as f:
+    with open('config/autolink_back.json', encoding='utf-8') as f:
         datas = json.load(f)
     links = []
     for key, value in datas.items():
@@ -212,14 +212,14 @@ def get_response_time():
                         # print(f"Error occurred: {e}")
                         contents.append(data)
                         print(contents)
-                        with open('./failed.json', 'w', encoding='utf-8') as f:
+                        with open('config/failed.json', 'w', encoding='utf-8') as f:
                             json.dump(contents, f, indent=4, ensure_ascii=False)
 
 
 def custom():
     with open('./autolink.json', 'r', encoding='utf-8') as f:
         autolink = json.load(f)
-    with open('./custom.json', 'r', encoding='utf-8') as f:
+    with open('config/custom.json', 'r', encoding='utf-8') as f:
         custom = json.load(f)
     if custom['partners'] != '[]':
         # 对custom.json中的partners进行处理
@@ -245,13 +245,13 @@ def custom():
 
         with open('./autolink.json', 'w', encoding='utf-8') as f:
             json.dump(autolink, f, indent=4, ensure_ascii=False)
-        with open('./custom.json', 'w', encoding='utf-8') as f:
+        with open('config/custom.json', 'w', encoding='utf-8') as f:
             json.dump(custom, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
     try:
-        with open("./config.json", 'r') as f:
+        with open("config/config.json", 'r') as f:
             config = json.load(f)
             url = config['url']
             port = config['port']
