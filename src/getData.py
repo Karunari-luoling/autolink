@@ -245,39 +245,39 @@ def custom():
                     break
             if not found:  # 如果邮件不存在于autolink.json的partners中，则添加到autolink.json的partners中
                 autolink['partners'].append(partner)
-        # # 判断autolink中dangerous的部分
-        # for dangerous in custom['partners']:
-        #     email = dangerous['mail']
-        #     found = False
-        #     for autolink_dangerous in autolink['dangerous']:
-        #         if autolink_dangerous['mail'] == email:
-        #             if dangerous['siteshot'] != '':
-        #                 autolink_dangerous['siteshot'] = dangerous['siteshot']  # 替换已存在的伙伴的'siteshot'字段
-        #             if dangerous['created'] != '':
-        #                 autolink_dangerous['created'] = dangerous['created']
-        #             if dangerous['avatar'] != '':
-        #                 autolink_dangerous['avatar'] = dangerous['avatar']
-        #             found = True
-        #             break
-        #     if not found:  # 如果邮件不存在于autolink.json的partners中，则添加到autolink.json的partners中
-        #         autolink['dangerous'].append(dangerous)
-        #
-        # # 判断autolink中failed的部分
-        # for failed in custom['partners']:
-        #     email = failed['mail']
-        #     found = False
-        #     for autolink_failed in autolink['failed']:
-        #         if autolink_failed['mail'] == email:
-        #             if failed['siteshot'] != '':
-        #                 autolink_failed['siteshot'] = failed['siteshot']  # 替换已存在的伙伴的'siteshot'字段
-        #             if failed['created'] != '':
-        #                 autolink_failed['created'] = failed['created']
-        #             if failed['avatar'] != '':
-        #                 autolink_failed['avatar'] = failed['avatar']
-        #             found = True
-        #             break
-        #     if not found:  # 如果邮件不存在于autolink.json的failed中，则添加到autolink.json的failed中
-        #         autolink['failed'].append(failed)
+        # 判断autolink中dangerous的部分
+        for dangerous in custom['partners']:
+            email = dangerous['mail']
+            found = False
+            for autolink_dangerous in autolink['dangerous']:
+                if autolink_dangerous['mail'] == email:
+                    if dangerous['siteshot'] != '':
+                        autolink_dangerous['siteshot'] = dangerous['siteshot']  # 替换已存在的伙伴的'siteshot'字段
+                    if dangerous['created'] != '':
+                        autolink_dangerous['created'] = dangerous['created']
+                    if dangerous['avatar'] != '':
+                        autolink_dangerous['avatar'] = dangerous['avatar']
+                    found = True
+                    break
+            if not found:  # 如果邮件不存在于autolink.json的partners中，则添加到autolink.json的partners中
+                autolink['dangerous'].append(dangerous)
+
+        # 判断autolink中failed的部分
+        for failed in custom['partners']:
+            email = failed['mail']
+            found = False
+            for autolink_failed in autolink['failed']:
+                if autolink_failed['mail'] == email:
+                    if failed['siteshot'] != '':
+                        autolink_failed['siteshot'] = failed['siteshot']  # 替换已存在的伙伴的'siteshot'字段
+                    if failed['created'] != '':
+                        autolink_failed['created'] = failed['created']
+                    if failed['avatar'] != '':
+                        autolink_failed['avatar'] = failed['avatar']
+                    found = True
+                    break
+            if not found:  # 如果邮件不存在于autolink.json的failed中，则添加到autolink.json的failed中
+                autolink['failed'].append(failed)
 
         autolink['partners'].sort(key=lambda x: datetime.fromtimestamp(x['created'] / 1000), reverse=False)
 
