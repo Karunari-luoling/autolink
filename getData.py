@@ -6,6 +6,8 @@ from shutil import copy
 import schedule
 import requests
 import urllib3
+from datetime import timezone
+from datetime import datetime
 
 
 def getbaseurldb(url):
@@ -42,9 +44,9 @@ def processdata():
     if os.path.exists('./autolink.json'):
         os.remove('./autolink.json')
 
-    with open("./ban.json", 'r', encoding='utf-8') as fw:
+    with open("./custom.json", 'r', encoding='utf-8') as fw:
         banurl = fw.read()
-        banurl = json.loads(banurl)
+        banurl = json.loads(banurl)['ban']
         banurl = ' '.join(map(str, banurl))
     for line in open("./db.json", 'r', encoding='utf-8', errors='ignore'):
         content = json.loads(line)
@@ -52,7 +54,10 @@ def processdata():
             if ' ' in content['comment']:
                 content['comment'] = content['comment'].replace(' ', '')
             if 'name' and 'avatar' and 'descr' and 'link' in content['comment']:
-                banlink = ''
+                banlink, siteshot = '', ''
+                if 'siteshot' in content['comment']:
+                    # siteshot = content['comment'].split('link:<ahref="')[1].split('">')[0]
+                    print("true")
                 name = content['comment'].split("name:")[1].split("<br>avatar:")[0]
                 avatar = content['comment'].split('avatar:<ahref="')[1].split('">')[0]
                 descr = content['comment'].split("descr:")[1].split('<br>link:')[0]
@@ -70,7 +75,8 @@ def processdata():
                         'name': name,
                         'avatar': avatar,
                         'descr': descr,
-                        'link': link
+                        'link': link,
+                        'siteshot': siteshot
                     }
                     with open('./js_data.json', 'r', encoding='utf-8') as f:
                         contents = json.load(f)
@@ -134,6 +140,7 @@ def defold():
     with open('./autolink_back.json', 'w', encoding='utf-8') as f:
         json.dump(data_back, f, indent=4, ensure_ascii=False)
     os.remove("./js_data.json")
+    custom()
 
 
 def is_website_alive():
@@ -159,7 +166,7 @@ def is_website_alive():
                     try:
                         response = requests.head(item['link'], allow_redirects=True, timeout=5)
                         if response.status_code == 200:
-                            #print(item['link'] + '状态:' + str(response.status_code))
+                            # print(item['link'] + '状态:' + str(response.status_code))
                             return True
                         else:
                             contents.append(data)
@@ -196,17 +203,50 @@ def get_response_time():
                     }
                     try:
                         response = requests.get(url=item['link']).elapsed.total_seconds()
-                        #print(item['link'] + '响应时间:' + str(response))  # 时间为秒
+                        # print(item['link'] + '响应时间:' + str(response))  # 时间为秒
                         if response > 5:
                             contents.append(data)
                             with open('./dangerous.json', 'w', encoding='utf-8') as f:
                                 json.dump(contents, f, indent=4, ensure_ascii=False)
                     except requests.exceptions.RequestException as e:
-                        #print(f"Error occurred: {e}")
+                        # print(f"Error occurred: {e}")
                         contents.append(data)
                         print(contents)
                         with open('./failed.json', 'w', encoding='utf-8') as f:
                             json.dump(contents, f, indent=4, ensure_ascii=False)
+
+
+def custom():
+    with open('./autolink.json', 'r', encoding='utf-8') as f:
+        autolink = json.load(f)
+    with open('./custom.json', 'r', encoding='utf-8') as f:
+        custom = json.load(f)
+    if custom['partners'] != '[]':
+        # 对custom.json中的partners进行处理
+        for partner in custom['partners']:
+            if 'created' not in partner:  # 如果伙伴没有'created'字段
+                partner['created'] = int(datetime.now(timezone.utc).timestamp() * 1000)  # 获取当前时间戳（毫秒级）并添加到伙伴中
+
+        for partner in custom['partners']:
+            email = partner['mail']
+            found = False
+            for autolink_partner in autolink['partners']:
+                if autolink_partner['mail'] == email:
+                    if partner['siteshot'] != '':
+                        autolink_partner['siteshot'] = partner['siteshot']  # 替换已存在的伙伴的'siteshot'字段
+                    if partner['created'] != '':
+                        autolink_partner['created'] = partner['created']
+                    found = True
+                    break
+            if not found:  # 如果邮件不存在于autolink.json的partners中，则添加到autolink.json的partners中
+                autolink['partners'].append(partner)
+
+        autolink['partners'].sort(key=lambda x: datetime.fromtimestamp(x['created'] / 1000), reverse=False)
+
+        with open('./autolink.json', 'w', encoding='utf-8') as f:
+            json.dump(autolink, f, indent=4, ensure_ascii=False)
+        with open('./custom.json', 'w', encoding='utf-8') as f:
+            json.dump(custom, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
