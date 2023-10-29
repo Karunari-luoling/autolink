@@ -13,7 +13,7 @@ def getbaseurldb(url):
     print("远程链接")
     urllib3.disable_warnings()
     if os.access("./config/db.json", os.F_OK):
-        os.remove("../config/db.json")
+        os.remove("./config/db.json")
     file = requests.get(url, allow_redirects=True, verify=False)
     open("./config/db.json", 'wb').write(file.content)
     processdata()
