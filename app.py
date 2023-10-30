@@ -8,7 +8,8 @@ app = Flask(__name__)
 @app.before_request
 def before():
     if not request.path == '/autolink':
-        return jsonify({"code": "正常", "message": "{}".format("输入正确参数")})
+        if not request.path == '/hexo_circle_of_friends':
+            return jsonify({"code": "正常", "message": "{}".format("输入正确参数")})
 
 
 @app.route('/<json_name>', methods=['GET', 'POST'])
@@ -16,8 +17,8 @@ def read_json(json_name):
     filename = json_name + '.json'
     try:
         with open('./' + filename, encoding='utf-8') as f:
-            autolink = json.load(f)
-        return jsonify(autolink)
+            jsons = json.load(f)
+        return jsonify(jsons)
     except Exception as e:
         return jsonify({"code": "异常", "message": "{}".format(e)})
 

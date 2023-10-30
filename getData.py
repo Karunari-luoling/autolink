@@ -139,6 +139,7 @@ def defold():
         json.dump(data_back, f, indent=4, ensure_ascii=False)
     os.remove("./config/js_data.json")
     custom()
+    hexo_circle_of_friends()
 
 
 def is_website_alive():
@@ -246,6 +247,19 @@ def custom():
             json.dump(autolink, f, indent=4, ensure_ascii=False)
         with open('./config/custom.json', 'w', encoding='utf-8') as f:
             json.dump(customs, f, indent=4, ensure_ascii=False)
+
+
+def hexo_circle_of_friends():
+    with open('./autolink.json', 'r', encoding='utf-8') as f:
+        autolink = json.load(f)
+    if autolink['partners'] != '[]':
+        names = [item['name'] for item in autolink['partners']]
+        links = [item['link'] for item in autolink['partners']]
+        avatars = [item['avatar'] for item in autolink['partners']]
+        friends = list(zip(names, links, avatars))
+        new_data = {'friends': friends}
+        with open('./hexo_circle_of_friends.json', 'w', encoding='utf-8') as f:
+            json.dump(new_data, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
