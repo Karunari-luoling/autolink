@@ -53,7 +53,7 @@ def processdata():
             if ' ' in content['comment']:
                 content['comment'] = content['comment'].replace(' ', '')
             if 'name' and 'avatar' and 'descr' and 'link' in content['comment']:
-                banlink, siteshot = '', ''
+                banlink = ''
                 if 'siteshot' in content['comment']:
                     # siteshot = content['comment'].split('link:<ahref="')[1].split('">')[0]
                     print("true")
@@ -74,8 +74,7 @@ def processdata():
                         'name': name,
                         'avatar': avatar,
                         'descr': descr,
-                        'link': link,
-                        'siteshot': siteshot
+                        'link': link
                     }
                     with open('./config/js_data.json', 'r', encoding='utf-8') as f:
                         contents = json.load(f)
@@ -160,8 +159,7 @@ def is_website_alive():
                         'name': item['name'],
                         'avatar': item['avatar'],
                         'descr': item['descr'],
-                        'link': item['link'],
-                        'siteshot': item['siteshot']
+                        'link': item['link']
                     }
                     try:
                         response = requests.head(item['link'], allow_redirects=True, timeout=5)
@@ -200,8 +198,7 @@ def get_response_time():
                         'name': item['name'],
                         'avatar': item['avatar'],
                         'descr': item['descr'],
-                        'link': item['link'],
-                        'siteshot': item['siteshot']
+                        'link': item['link']
                     }
                     try:
                         response = requests.get(url=item['link']).elapsed.total_seconds()
@@ -222,69 +219,32 @@ def custom():
     with open('./autolink.json', 'r', encoding='utf-8') as f:
         autolink = json.load(f)
     with open('./config/custom.json', 'r', encoding='utf-8') as f:
-        custom = json.load(f)
-    if custom['partners'] != '[]':
+        customs = json.load(f)
+    if customs['partners'] != '[]':
         # 对custom.json中的partners进行处理
-        for partner in custom['partners']:
+        for partner in customs['partners']:
             if 'created' not in partner:  # 如果伙伴没有'created'字段
                 partner['created'] = int(datetime.now(timezone.utc).timestamp() * 1000)  # 获取当前时间戳（毫秒级）并添加到伙伴中
 
         # 判断autolink中partners的部分
-        for partner in custom['partners']:
+        for partner in customs['partners']:
             email = partner['mail']
             found = False
             for autolink_partner in autolink['partners']:
                 if autolink_partner['mail'] == email:
-                    if partner['siteshot'] != '':
-                        autolink_partner['siteshot'] = partner['siteshot']  # 替换已存在的伙伴的'siteshot'字段
-                    if partner['created'] != '':
-                        autolink_partner['created'] = partner['created']
-                    if partner['avatar'] != '':
-                        autolink_partner['avatar'] = partner['avatar']
+                    for key in ('siteshot', 'created', 'avatar', 'descr', 'link', 'name'):
+                        autolink_partner[key] = partner.get(key)
                     found = True
                     break
-            if not found:  # 如果邮件不存在于autolink.json的partners中，则添加到autolink.json的partners中
+            if not found:  # 如果邮箱不存在于autolink.json的partners中，则添加到autolink.json的partners中
                 autolink['partners'].append(partner)
-        # 判断autolink中dangerous的部分
-        for dangerous in custom['partners']:
-            email = dangerous['mail']
-            found = False
-            for autolink_dangerous in autolink['dangerous']:
-                if autolink_dangerous['mail'] == email:
-                    if dangerous['siteshot'] != '':
-                        autolink_dangerous['siteshot'] = dangerous['siteshot']  # 替换已存在的伙伴的'siteshot'字段
-                    if dangerous['created'] != '':
-                        autolink_dangerous['created'] = dangerous['created']
-                    if dangerous['avatar'] != '':
-                        autolink_dangerous['avatar'] = dangerous['avatar']
-                    found = True
-                    break
-            if not found:  # 如果邮件不存在于autolink.json的partners中，则添加到autolink.json的partners中
-                autolink['dangerous'].append(dangerous)
-
-        # 判断autolink中failed的部分
-        for failed in custom['partners']:
-            email = failed['mail']
-            found = False
-            for autolink_failed in autolink['failed']:
-                if autolink_failed['mail'] == email:
-                    if failed['siteshot'] != '':
-                        autolink_failed['siteshot'] = failed['siteshot']  # 替换已存在的伙伴的'siteshot'字段
-                    if failed['created'] != '':
-                        autolink_failed['created'] = failed['created']
-                    if failed['avatar'] != '':
-                        autolink_failed['avatar'] = failed['avatar']
-                    found = True
-                    break
-            if not found:  # 如果邮件不存在于autolink.json的failed中，则添加到autolink.json的failed中
-                autolink['failed'].append(failed)
 
         autolink['partners'].sort(key=lambda x: datetime.fromtimestamp(x['created'] / 1000), reverse=False)
 
         with open('./autolink.json', 'w', encoding='utf-8') as f:
             json.dump(autolink, f, indent=4, ensure_ascii=False)
         with open('./config/custom.json', 'w', encoding='utf-8') as f:
-            json.dump(custom, f, indent=4, ensure_ascii=False)
+            json.dump(customs, f, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
