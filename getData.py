@@ -233,7 +233,8 @@ def custom():
             for autolink_partner in autolink['partners']:
                 if autolink_partner['mail'] == email:
                     for key in ('siteshot', 'created', 'avatar', 'descr', 'link', 'name'):
-                        autolink_partner[key] = partner.get(key)
+                        if partner.get(key):
+                            autolink_partner[key] = partner.get(key)
                     found = True
                     break
             if not found:  # 如果邮箱不存在于autolink.json的partners中，则添加到autolink.json的partners中
