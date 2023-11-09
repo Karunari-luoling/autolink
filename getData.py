@@ -230,16 +230,26 @@ def custom():
         # 判断autolink中partners的部分
         for partner in customs['partners']:
             email = partner['mail']
-            found = False
+            found1 = False
+            found2 = False
             for autolink_partner in autolink['partners']:
                 if autolink_partner['mail'] == email:
                     for key in ('siteshot', 'created', 'avatar', 'descr', 'link', 'name'):
                         if partner.get(key):
                             autolink_partner[key] = partner.get(key)
-                    found = True
+                    found1 = True
                     break
-            if not found:  # 如果邮箱不存在于autolink.json的partners中，则添加到autolink.json的partners中
-                autolink['partners'].append(partner)
+            if not found1:  # 如果邮箱不存在于autolink.json的partners中，则添加到autolink.json的partners中
+                for autolink_failed in autolink['failed']:
+                    if autolink_failed['mail'] == email:
+                        found2 = True
+                for autolink_dangerous in autolink['failed']:
+                    if autolink_dangerous['mail'] == email:
+                        found2 = True
+                if not found2:
+                    autolink['partners'].append(partner)
+
+
 
         autolink['partners'].sort(key=lambda x: datetime.fromtimestamp(x['created'] / 1000), reverse=False)
 
