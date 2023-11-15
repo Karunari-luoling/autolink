@@ -26,6 +26,7 @@ def getbaselocaldb(url):
     copy(url, './config/db.json')
     processdata()
 
+
 def processdata():
     if os.path.exists('./config/autolink_back.json'):
         os.remove('./config/autolink_back.json')
@@ -82,11 +83,13 @@ def processdata():
                         json.dump(contents, f, indent=4, ensure_ascii=False)
     custom()
 
+
 def defold():
     with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
-       data = json.load(f)
+        data = json.load(f)
     with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
-       datas = json.load(f)
+        datas = json.load(f)
+    times = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
     def process_list(data, list_name):
         # 对列表进行排序，具有相同 mail 和 created 的元素会被分到同一组
@@ -96,7 +99,7 @@ def defold():
         # 在每个组中，选择最后一个元素
         new_list = [list(group)[-1] for key, group in groups]
         return new_list
-    
+
     new_partners = process_list(data, 'partners')
     new_failed = process_list(data, 'failed')
     new_dangerous = process_list(data, 'dangerous')
@@ -104,6 +107,7 @@ def defold():
     data['partners'] = new_partners
     data['dangerous'] = new_dangerous
     data['failed'] = new_failed
+    data['last_update'] = times
     for item in data['failed']:
         if item in data['partners']:
             data['partners'].remove(item)
@@ -117,6 +121,7 @@ def defold():
     with open('./autolink.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
     hexo_circle_of_friends()
+
 
 def custom():
     with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
@@ -135,7 +140,7 @@ def custom():
             found1 = False
             for autolink_partner in autolink_back['partners']:
                 if autolink_partner['mail'] == email:
-                    for key in ('siteshot', 'created','avatar', 'descr', 'link', 'name'):
+                    for key in ('siteshot', 'created', 'avatar', 'descr', 'link', 'name'):
                         if partner.get(key):
                             autolink_partner[key] = partner.get(key)
                     found1 = True
@@ -160,6 +165,7 @@ def custom():
     is_website_dangerous()
     defold()
 
+
 def hexo_circle_of_friends():
     with open('./autolink.json', 'r', encoding='utf-8') as f:
         autolink = json.load(f)
@@ -178,15 +184,16 @@ def hexo_circle_of_friends():
     with open('./hexo_circle_of_friends.json', 'w', encoding='utf-8') as f:
         json.dump(new_data, f, indent=4, ensure_ascii=False)
 
+
 def is_website_dangerous():
     with open('./config/custom.json', 'r', encoding='utf-8') as f:
         customs = json.load(f)
     if customs['dangerous'] != '[]':
         with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
             dangerous = json.load(f)
-        for partner in dangerous['partners']:  
-            link = partner.get('link') 
-            if link in customs['dangerous']:  
+        for partner in dangerous['partners']:
+            link = partner.get('link')
+            if link in customs['dangerous']:
                 dangerous['dangerous'].append(partner)
         with open('./config/autolink_back.json', 'w', encoding='utf-8') as f:
             json.dump(dangerous, f, indent=4, ensure_ascii=False)
@@ -213,7 +220,9 @@ def is_website_alive():
                     }
                     try:
                         print(item['link'])
-                        response = requests.request("GET","https://v2.api-m.com/api/speed?url="+item['link'],headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36'})
+                        response = requests.request("GET", "https://v2.api-m.com/api/speed?url=" + item['link'],
+                                                    headers={
+                                                        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36'})
                         response = json.loads(response.text)
                         if response["code"] == 200:
                             print(item['link'] + ' 状态:' + str(response["code"]))
@@ -230,6 +239,7 @@ def is_website_alive():
     print("检测完成")
     custom()
 
+
 if __name__ == "__main__":
     try:
         with open("./config/config.json", 'r') as f:
@@ -243,14 +253,14 @@ if __name__ == "__main__":
         print("获取配置出错")
     if 'http' in url:
         schedule.every(fentch_interval).minutes.do(getbaseurldb, url)
-        #schedule.every(failed_interval).hours.do(is_website_alive)
+        # schedule.every(failed_interval).hours.do(is_website_alive)
         schedule.run_all()
         while True:
             schedule.run_pending()
             time.sleep(60)
     else:
         schedule.every(fentch_interval).minutes.do(getbaselocaldb, url)
-        #schedule.every(failed_interval).hours.do(is_website_alive)
+        # schedule.every(failed_interval).hours.do(is_website_alive)
         schedule.run_all()
         while True:
             schedule.run_pending()
