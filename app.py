@@ -7,15 +7,17 @@ from flask_jwt_extended import JWTManager, create_access_token
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
 app = Flask(__name__)
-app.logger.setLevel(logging.DEBUG)
-app.config['JWT_SECRET_KEY'] = 'thunder_luoling'
+with open("./config/config.json", 'r') as f:
+    config = json.load(f)
+    password_config = config['password']
+    JWT_SECRET_KEY_config = config['JWT_SECRET_KEY']
+app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY_config
 access_token = None
 timer = None
 BLACKLIST = set()
 # 生成密码哈希
-password_hash = generate_password_hash('thunder_luoling')
+password_hash = generate_password_hash(password_config)
 jwt = JWTManager(app)
-
 
 @app.errorhandler(NoAuthorizationError)
 def handle_auth_error(e):
@@ -29,11 +31,11 @@ def handle_server_error(e):
 
 @app.before_request
 def before():
-    if request.path not in ['/autolink', '/hexo_circle_of_friends', '/custom', '/login', '/test']:
+    if request.path not in ['/autolink', '/hexo_circle_of_friends', '/custom', '/login', '/test','/config']:
         return jsonify({"code": "正常", "message": "{}".format("输入正确参数")})
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
     password = request.json.get('password', None)
     if not check_password_hash(password_hash, password):
@@ -45,8 +47,33 @@ def login():
     access_token = create_access_token(identity=password)
     timer = threading.Timer(24 * 60 * 60, block_token, args=[access_token])
     timer.start()
-    return jsonify(access_token=access_token)
+    return jsonify(code=200,access_token=access_token)
 
+@app.route('/config', methods=['GET', 'POST'])
+def config():
+    access_token_headers = request.headers.get('Authorization', None)
+    if not access_token_headers:
+        return jsonify({"code": "err", "msg": "Missing authorization token"}), 401
+    if access_token == None:
+        return jsonify({"code": "err", "msg": "Please log in first!"}), 401
+    if access_token_headers == access_token and access_token not in BLACKLIST:
+        try:
+            json_data = request.get_json()
+        except:
+            abort(400, 'Invalid JSON')
+        try:
+            with open('./config/config.json','r', encoding='utf-8') as f:
+                jsons = json.load(f)
+            for key in ('url', 'port', 'fentch_interval', 'JWT_SECRET_KEY', 'password'):
+                if json_data.get(key):
+                    jsons[key] = json_data.get(key)
+            with open('./config/config.json', 'w', encoding='utf-8') as f:
+                json.dump(jsons, f, indent=4, ensure_ascii=False)
+            return jsons
+        except Exception as e:
+            return jsonify({"code": "异常", "message": "{}".format(e)})
+    else:
+        return jsonify({"msg": "The token is incorrect, please log in again!"}), 401
 
 @app.route('/custom', methods=['GET', 'POST'])
 def custom():
@@ -58,19 +85,17 @@ def custom():
     if access_token_headers == access_token and access_token not in BLACKLIST:
         try:
             json_data = request.get_json()
+            print(json_data)
         except:
             abort(400, 'Invalid JSON')
-        json_data = request.get_json()
         partners = json_data["partners"]
         ban = json_data["ban"]
         dangerous = json_data["dangerous"]
         try:
             with open('./config/custom.json', encoding='utf-8') as f:
                 jsons = json.load(f)
-            if dangerous != '[]':
-                for dangerous_item in dangerous:
-                    if dangerous_item not in jsons["dangerous"]:
-                        jsons["dangerous"].append(dangerous_item)
+            if dangerous:
+                jsons["dangerous"] = dangerous
             if partners != '[]':
                 for partner in partners:
                     if partner["mail"] in [partner["mail"] for partner in jsons["partners"]]:
@@ -81,10 +106,8 @@ def custom():
                                         partner_item[key] = partner.get(key)
                     else:
                         jsons["partners"].append(partner)
-            if ban != '[]':
-                for ban_item in ban:
-                    if ban_item not in jsons["ban"]:
-                        jsons["ban"].append(ban_item)
+            if ban:
+                jsons["ban"] = ban
             with open('./config/custom.json', 'w', encoding='utf-8') as f:
                 json.dump(jsons, f, indent=4, ensure_ascii=False)
             return jsonify(jsons)
@@ -106,8 +129,9 @@ def read_json(json_name):
             return jsonify({"code": "异常", "message": "{}".format(e)})
 
 
-def after_request(resp):
-    resp.headers['Access-Control-Allow-Origin'] = '*'
+def after_request(resp):  
+    resp.headers['Access-Control-Allow-Origin'] = '*'  
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Access-Control-Request-Headers,Authorization'  
     return resp
 
 
@@ -120,7 +144,9 @@ if __name__ == "__main__":
         with open("./config/config.json", 'r') as f:
             config = json.load(f)
             port = config['port']
+            password_config = config['password']
+            JWT_SECRET_KEY_config = config['JWT_SECRET_KEY']
     except:
         print("获取配置出错")
     app.after_request(after_request)
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
