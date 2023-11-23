@@ -1,5 +1,4 @@
 import json
-import logging
 import threading
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, abort, jsonify, request
@@ -129,8 +128,10 @@ def read_json(json_name):
             return jsonify({"code": "异常", "message": "{}".format(e)})
 
 
-def after_request(resp):  
-    resp.headers['Access-Control-Allow-Origin'] = '*'  
+def after_request(resp):
+    # 允许跨域请求
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    # 允许携带Content-Type Authorization请求头
     resp.headers['Access-Control-Allow-Headers'] = 'Content-Type,Access-Control-Request-Headers,Authorization'  
     return resp
 
