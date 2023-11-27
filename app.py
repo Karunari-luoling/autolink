@@ -58,8 +58,10 @@ def config():
     if access_token_headers == access_token and access_token not in BLACKLIST:
         try:
             json_data = request.get_json()
-            json_data['port'] = int(json_data['port'])
-            json_data['fentch_interval'] = int(json_data['fentch_interval'])
+            if json_data.get('port'):
+                json_data['port'] = int(json_data['port'])
+            if json_data.get('fentch_interval'):
+                json_data['fentch_interval'] = int(json_data['fentch_interval'])
         except:
             abort(400, 'Invalid JSON')
         try:
@@ -89,8 +91,6 @@ def custom():
         except:
             abort(400, 'Invalid JSON')
         partners = json_data["partners"]
-        for partner in partners:
-            partner['created'] = int(partner['created'])
         ban = json_data["ban"]
         dangerous = json_data["dangerous"]
         try:
@@ -99,6 +99,8 @@ def custom():
             if dangerous:
                 jsons["dangerous"] = dangerous
             if partners != '[]':
+                for partner in partners:
+                    partner['created'] = int(partner['created'])
                 for partner in partners:
                     if partner["mail"] in [partner["mail"] for partner in jsons["partners"]]:
                         for partner_item in jsons["partners"]:
