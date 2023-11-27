@@ -30,7 +30,7 @@ def handle_server_error(e):
 
 @app.before_request
 def before():
-    if request.path not in ['/autolink', '/hexo_circle_of_friends', '/custom', '/login', '/test','/config']:
+    if request.path not in ['/autolink', '/hexo_circle_of_friends', '/custom', '/login', '/test','/config','/delete']:
         return jsonify({"code": "正常", "message": "{}".format("输入正确参数")})
 
 
@@ -131,8 +131,34 @@ def read_json(json_name):
             return jsonify(jsons)
         except Exception as e:
             return jsonify({"code": "异常", "message": "{}".format(e)})
-
-
+@app.route('/delete', methods=['GET', 'POST'])
+def delete():
+    access_token_headers = request.headers.get('Authorization', None)
+    if not access_token_headers:
+        return jsonify({"code": "err", "msg": "Missing authorization token"}), 401
+    if access_token == None:
+        return jsonify({"code": "err", "msg": "Please log in first!"}), 401
+    if access_token_headers == access_token and access_token not in BLACKLIST:
+        try:
+            json_data = request.get_json()
+        except:
+            abort(400, 'Invalid JSON')
+        try:
+            with open('./config/custom.json', encoding='utf-8') as f:
+                jsons = json.load(f)
+            partner_to_remove = None
+            for partner in jsons['partners']:
+                if partner['mail'] == json_data:
+                    partner_to_remove = partner
+                    break
+            if partner_to_remove:
+                jsons['partners'].remove(partner_to_remove)
+            with open('./config/custom.json', 'w', encoding='utf-8') as f:
+                json.dump(jsons, f, indent=4, ensure_ascii=False)
+            return jsonify(jsons)
+        except Exception as e:
+            return jsonify({"code": "异常", "message": "{}".format(e)})
+        
 def after_request(resp):
     # 允许跨域请求
     resp.headers['Access-Control-Allow-Origin'] = '*'
