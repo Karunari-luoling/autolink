@@ -54,33 +54,58 @@ def processdata():
                 content['comment'] = content['comment'].replace(' ', '')
             if 'name' and 'avatar' and 'descr' and 'link' in content['comment']:
                 banlink = ''
-                if 'siteshot' in content['comment']:
-                    # siteshot = content['comment'].split('link:<ahref="')[1].split('">')[0]
-                    print("true")
-                name = content['comment'].split("name:")[1].split("<br>avatar:")[0]
-                avatar = content['comment'].split('avatar:<ahref="')[1].split('">')[0]
-                descr = content['comment'].split("descr:")[1].split('<br>link:')[0]
-                link = content['comment'].split('link:<ahref="')[1].split('">')[0]
+                siteshot = None
+                if 'codeclass' in content['comment']:
+                    name = content['comment'].split("name:")[1].split("\n")[0]
+                    avatar = content['comment'].split('avatar:')[1].split('\n')[0]
+                    descr = content['comment'].split("descr:")[1].split('\n')[0]
+                    link = content['comment'].split('link:')[1].split('\n')[0]
+                    if ('https:' or 'http:') and '//' in link:
+                        link = link.replace('//', 'https://')
+                    if 'siteshot' in content['comment']:
+                        siteshot = content['comment'].split('siteshot:')[1].split('\n')[0]
+                else:
+                    name = content['comment'].split("name:")[1].split("<br>avatar:")[0]
+                    avatar = content['comment'].split('avatar:<ahref="')[1].split('">')[0]
+                    descr = content['comment'].split("descr:")[1].split('<br>link:')[0]
+                    link = content['comment'].split('link:<ahref="')[1].split('">')[0]
                 if 'https://' in link:
-                    banlink = link.replace('https:', '').replace('/', '')
+                    banlink = link.replace('https://', '')
                 if 'http://' in link:
-                    banlink = link.replace('http:', '').replace('/', '')
+                    banlink = link.replace('http://', '')
                 if 'github.io' in banurl and 'github.io' in banlink:
                     continue
-                if banlink not in banurl:
-                    data = {
-                        'mail': content['mail'],
-                        'created': content['created'],
-                        'name': name,
-                        'avatar': avatar,
-                        'descr': descr,
-                        'link': link
-                    }
-                    with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
-                        contents = json.load(f)
-                    contents['partners'].append(data)
-                    with open('./config/autolink_back.json', 'w', encoding='utf-8') as f:
-                        json.dump(contents, f, indent=4, ensure_ascii=False)
+                if siteshot:
+                    if banlink not in banurl:
+                        data = {
+                            'mail': content['mail'],
+                            'created': content['created'],
+                            'name': name,
+                            'avatar': avatar,
+                            'descr': descr,
+                            'link': link,
+                            'siteshot': siteshot
+                        }
+                        with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
+                            contents = json.load(f)
+                        contents['partners'].append(data)
+                        with open('./config/autolink_back.json', 'w', encoding='utf-8') as f:
+                            json.dump(contents, f, indent=4, ensure_ascii=False)
+                else:
+                    if banlink not in banurl:
+                        data = {
+                            'mail': content['mail'],
+                            'created': content['created'],
+                            'name': name,
+                            'avatar': avatar,
+                            'descr': descr,
+                            'link': link
+                        }
+                        with open('./config/autolink_back.json', 'r', encoding='utf-8') as f:
+                            contents = json.load(f)
+                        contents['partners'].append(data)
+                        with open('./config/autolink_back.json', 'w', encoding='utf-8') as f:
+                            json.dump(contents, f, indent=4, ensure_ascii=False)
     custom()
 
 
