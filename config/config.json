@@ -3,5 +3,7 @@
   "port": 3000,
   "fentch_interval": 30,
   "dangerous_interval": 24,
-  "failed_interval":6
+  "failed_interval":6,
+  "password" : "123456",
+  "JWT_SECRET_KEY": "123456"
 }
