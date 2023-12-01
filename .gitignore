@@ -7,3 +7,4 @@ config/config.json
 /config/failed.json
 /config/dangerous.json
 /hexo_circle_of_friends.json
+/config/autolink_back.json
