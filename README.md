@@ -92,7 +92,6 @@ fetch("ip/hexo_circle_of_friends")
 ```
 返回示例如下：
 ```json
-```json
 {
     "friends": [
         [
