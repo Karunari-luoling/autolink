@@ -1,2 +1,3 @@
 ./config/config.yml
-./data/
+./data/autolink.db
+./data/db.json
