@@ -1,10 +1,2 @@
-/autolink.json
-/config/db.json
-/.idea
-/test
-/js_data.json
-config/config.json
-/config/failed.json
-/config/dangerous.json
-/hexo_circle_of_friends.json
-/config/autolink_back.json
+./config/config.yml
+./data/
