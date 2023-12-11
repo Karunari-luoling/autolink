@@ -7,7 +7,7 @@ links_and_friends = Blueprint('read_json', __name__)
 root_dir = os.path.abspath('.')
 db_path = os.path.join(root_dir, 'data', 'autolink.db')
 
-@links_and_friends.route('/<json_name>', methods=['POST', 'GET'])
+@links_and_friends.route('/<json_name>', methods=['GET'])
 def links_and_friends_view(json_name):
     if json_name == "autolink":
         keys = ["mail", "name", "avatar", "descr", "link", "siteshot", "state"]
@@ -17,5 +17,5 @@ def links_and_friends_view(json_name):
     elif json_name == "hexo_circle_of_friends":
         keys = ["name", "link", "avatar"]
         data = read_data(config.conn, "links", keys, "state != 0")
-        return jsonify(data)
+        return jsonify({"friends": data})
     return jsonify({"code": "err", "msg": "暂未开放"})
