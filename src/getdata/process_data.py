@@ -17,8 +17,9 @@ def process_data(content):
                 avatar = re.search(r'avatar: (.*?)\n', comment).group(1)
                 descr = re.search(r'descr: (.*?)\n', comment).group(1)
                 link = re.search(r'link: (.*?)\n', comment).group(1)
-                if ('https:' or 'http:') and '//' in link:
-                    link = link.replace('//', 'https://')
+                if ('https:' or 'http:') and '//' not in link:
+                    if '//' in link:
+                        link = link.replace('//', 'https://')
                 siteshot_match = re.search(r'siteshot: (.*?)\n', comment)
                 siteshot = siteshot_match.group(1) if siteshot_match else None
             else:
@@ -26,8 +27,9 @@ def process_data(content):
                 avatar = re.search(r'avatar: <a href="(.*?)">', comment).group(1)
                 descr = re.search(r'descr: (.*?)<br>', comment).group(1)
                 link = re.search(r'link: <a href="(.*?)">', comment).group(1)
-                if ('https:' or 'http:') and '//' in link:
-                    link = link.replace('//', 'https://')
+                if ('https:' or 'http:') and '//' not in link:
+                    if '//' in link:
+                        link = link.replace('//', 'https://')
                 siteshot_match = re.search(r'siteshot: <a href="(.*?)">', comment)
                 siteshot = siteshot_match.group(1) if siteshot_match else None
 
