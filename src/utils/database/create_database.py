@@ -16,7 +16,8 @@ def create_database():
                 descr TEXT NOT NULL,
                 link TEXT NOT NULL,
                 siteshot TEXT,
-                state INTEGER NOT NULL
+                state INTEGER NOT NULL,
+                created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """,
         "ban": """

@@ -17,5 +17,5 @@ def getlocaldb(url):
         content = json.loads(line)
         data = process_data(content)
         if data is not None:
-            partners = [data['name'], data['avatar'], data['descr'], data['link'], data['siteshot'], data['state']]
+            partners = [data['name'], data['avatar'], data['descr'], data['link'], data['siteshot'], data['state'], data['created']]
             update_links_data(config.conn, partners, data['mail'])

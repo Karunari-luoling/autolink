@@ -1,3 +1,4 @@
+from datetime import timezone, datetime
 from flask import Blueprint, jsonify, request
 import src.utils.config as config
 from src.utils.database.update_data import update_ban_data, update_links_data
@@ -14,11 +15,13 @@ def custom_view():
     bans = json_data["ban"]
     if partners != []:
         for partner in partners:
-            data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], partner['state']]
+            created = int(datetime.now(timezone.utc).timestamp() * 1000)
+            print(created)
+            data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], partner['state'], created]
             mail = partner['mail']
             update_links_data(config.conn,data,mail)
             data = read_data(config.conn,"links")
-            keys = ["id","mail", "name", "avatar", "descr", "link", "siteshot","state"]
+            keys = ["id","mail", "name", "avatar", "descr", "link", "siteshot","state","created"]
             data = [dict(zip(keys, item)) for item in data]
             return jsonify({"partners": data})
     if bans != []:

@@ -11,6 +11,7 @@ def process_data(content):
         comment = content.get('comment').replace('  ', ' ')
         if 'name' and 'avatar' and 'descr' and 'link' in comment:
             mail = content['mail']
+            created = content['created']
             state = 2
             if 'code class' in comment:
                 name = re.search(r'name: (.*?)\n', comment).group(1)
@@ -44,7 +45,8 @@ def process_data(content):
                         'descr': descr,
                         'link': link,
                         'siteshot': siteshot,
-                        'state':state
+                        'state':state,
+                        'created': created
                     }
             return data
     return None
