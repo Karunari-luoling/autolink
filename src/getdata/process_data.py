@@ -1,5 +1,4 @@
 import re
-from bs4 import BeautifulSoup
 import yaml
 from src.utils.database.read_data import read_data
 import src.utils.config as config
@@ -18,6 +17,8 @@ def process_data(content):
                 avatar = re.search(r'avatar: (.*?)\n', comment).group(1)
                 descr = re.search(r'descr: (.*?)\n', comment).group(1)
                 link = re.search(r'link: (.*?)\n', comment).group(1)
+                if link.endswith('/'):
+                    link = link.rstrip('/')
                 if ('https:' or 'http:') not in link:
                     if '//' in link:
                         link = link.replace('//', 'https://')
@@ -30,6 +31,8 @@ def process_data(content):
                 avatar = re.search(r'avatar: <a href="(.*?)">', comment).group(1)
                 descr = re.search(r'descr: (.*?)<br>', comment).group(1)
                 link = re.search(r'link: <a href="(.*?)">', comment).group(1)
+                if link.endswith('/'):
+                    link = link.rstrip('/')
                 if ('https:' or 'http:') not in link:
                     if '//' in link:
                         link = link.replace('//', 'https://')
