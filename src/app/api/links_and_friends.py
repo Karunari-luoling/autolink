@@ -13,7 +13,8 @@ def links_and_friends_view(json_name):
         keys = ["mail", "name", "avatar", "descr", "link", "siteshot", "state"]
         data = read_data(config.conn, "links", keys, "state != 0")
         data = [dict(zip(keys, item)) for item in data]
-        return jsonify({"partners": data})
+        state_values = list(set(item['state'] for item in data))
+        return jsonify({"partners": data,"state_list":state_values})
     elif json_name == "hexo_circle_of_friends":
         keys = ["name", "link", "avatar"]
         data = read_data(config.conn, "links", keys, "state != 0")
