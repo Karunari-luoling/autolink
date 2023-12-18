@@ -1,0 +1,7 @@
+Flask==3.0.0
+Flask_JWT_Extended==4.5.3
+PyYAML==6.0.1
+ruamel.yaml==0.18.5
+schedule==1.2.1
+watchdog==3.0.0
+Werkzeug==3.0.1
