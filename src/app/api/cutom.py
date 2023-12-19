@@ -16,18 +16,17 @@ def custom_view():
     if partners != []:
         for partner in partners:
             created = int(datetime.now(timezone.utc).timestamp() * 1000)
-            print(created)
             data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], partner['state'], created]
             mail = partner['mail']
             update_links_data(config.conn,data,mail)
-            data = read_data(config.conn,"links")
-            keys = ["id","mail", "name", "avatar", "descr", "link", "siteshot","state","created"]
-            data = [dict(zip(keys, item)) for item in data]
-            return jsonify({"partners": data})
+        data = read_data(config.conn,"links")
+        keys = ["id","mail", "name", "avatar", "descr", "link", "siteshot","state","created"]
+        data = [dict(zip(keys, item)) for item in data]
+        return jsonify({"partners": data})
     if bans != []:
         for ban in bans:
             update_ban_data(config.conn,ban)
-            data = read_data(config.conn,"ban")
-            data = [item[0] for item in data]
-            return jsonify({"ban": data})
+        data = read_data(config.conn,"ban")
+        data = [item[0] for item in data]
+        return jsonify({"ban": data})
     return jsonify({"code": "err", "message": "There is no modified data"})
