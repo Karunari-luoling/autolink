@@ -1,8 +1,6 @@
 import json
+import re
 from shutil import copy
-from src.getdata.process_data import process_data
-from src.utils.database.update_data import update_links_data
-import src.utils.config as config
 
 def get_enabled_db(config):
     for db in config:
@@ -13,9 +11,41 @@ def get_enabled_db(config):
 
 def getlocaldb(url):
     copy(url, './data/db.json')
+    content = []
     for line in open("./data/db.json", 'r', encoding='utf-8', errors='ignore'):
-        content = json.loads(line)
-        data = process_data(content)
-        if data is not None:
-            partners = [data['name'], data['avatar'], data['descr'], data['link'], data['siteshot'], data['state'], data['created']]
-            update_links_data(config.conn, partners, data['mail'])
+        content.append(json.loads(line))
+    return content
+
+def get_match(pattern, string):
+    match = re.search(pattern, string)
+    return match.group(1) if match else None
+
+def process_link(link):
+    if link.endswith('/'):
+        link = link.rstrip('/')
+    protocol = 'http://' if 'http://' in link else 'https://'
+    if ('https:' or 'http:') not in link:
+        if '//' in link:
+            link = link.replace('//', 'https://')
+        else :
+            link = 'https://' + link
+    link = re.sub(r'(https?://)', '', link)
+    link = re.sub(r'(//.*|#.*)', '', link)
+    link = protocol + link
+    return link
+
+def process_data_final(name, avatar, descr, siteshot):
+    extensions = ['jpg', 'png', 'gif', 'webp', 'jpeg', 'ico', 'svg', 'bmp', 'tif', 'tiff']
+
+    if name:
+        name = name.split('//')[0].split('#')[0].strip()
+    if avatar:
+        for ext in extensions:
+            avatar = re.sub(r'(?<=' + ext + ') //.*', '', avatar)
+    if descr:
+        descr = descr.split('//')[0].split('#')[0].strip()
+    if siteshot:
+        for ext in extensions:
+            siteshot = re.sub(r'(?<=' + ext + ') //.*', '', siteshot)
+
+    return name, avatar, descr, siteshot
