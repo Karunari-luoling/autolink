@@ -1,4 +1,3 @@
-import re
 from src.getdata.config import get_match, process_data_final, process_link
 from src.utils.process_decorator import process_decorator
 
