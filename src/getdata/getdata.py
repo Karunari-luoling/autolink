@@ -8,17 +8,21 @@ import src.utils.config as config
 
 def run_getdata(db, fentch_time, restart_event):
     while True:
-        if restart_event.is_set():
-            # 清除重启事件并重新开始
-            restart_event.clear()
-        if get_enabled_db(db) == 'local':
-            schedule.every(fentch_time["fentch_interval"]).minutes.do(start_getdata, getlocaldb(db[0]["url"]))
-            schedule.run_all()
-            while True:
-                schedule.run_pending()
-                time.sleep(60)
-        elif get_enabled_db(db) == 'mongodb':
-            print('mongodb')
+        try:
+            if restart_event.is_set():
+                # 清除重启事件并重新开始
+                restart_event.clear()
+            if get_enabled_db(db) == 'local':
+                schedule.every(fentch_time["fentch_interval"]).minutes.do(start_getdata, getlocaldb(db[0]["url"]))
+                schedule.run_all()
+                while True:
+                    schedule.run_pending()
+                    time.sleep(60)
+            elif get_enabled_db(db) == 'mongodb':
+                print('mongodb')
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            break  # 如果发生错误，退出循环
 
 def start_getdata(content):
     for item in content:
