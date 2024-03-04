@@ -13,7 +13,7 @@ def create_database():
                 mail TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
                 avatar TEXT NOT NULL,
-                descr TEXT NOT NULL,
+                descr TEXT NOT NULL DEFAULT 这个人还没有介绍哦,
                 link TEXT NOT NULL,
                 siteshot TEXT,
                 state INTEGER NOT NULL,
