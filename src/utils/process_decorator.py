@@ -10,7 +10,7 @@ def process_decorator(func):
             if 'name' and 'avatar' and 'descr' and 'link' in comment:
                 mail = content['mail']
                 created = content['created']
-                state = 2
+                state = -1
 
                 data = func(comment)
 
