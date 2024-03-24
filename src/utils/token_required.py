@@ -14,7 +14,7 @@ def token_required(f):
             try:
                 return f(*args, **kwargs)
             except Exception as e:
-                return jsonify({"code": "异常", "message": "{}".format(e)})
+                return jsonify({"code": "err", "message": "{}".format(e)})
         else:
-            return jsonify({"msg": "The token is incorrect, please log in again!"}), 401
+            return jsonify({"code":"err","msg": "The token is incorrect, please log in again!"}), 401
     return decorated_function
