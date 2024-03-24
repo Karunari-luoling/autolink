@@ -16,7 +16,10 @@ def custom_view():
     if partners != []:
         for partner in partners:
             created = int(datetime.now(timezone.utc).timestamp() * 1000)
-            data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], partner['state'], created]
+            try:
+                data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], partner['state'], created]
+            except KeyError as e:
+                return jsonify({"code": "err", "message": f"Missing required partner information: {e}"})
             mail = partner['mail']
             insert_links_data(config.conn,data,mail)
         data = read_data(config.conn,"links")

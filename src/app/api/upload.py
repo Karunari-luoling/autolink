@@ -19,7 +19,10 @@ def upload_view():
             banlink = '.'.join(banlink.split('.')[-2:])
             if banlink in banurl:
                 return jsonify({"code": "err", "message": "The link is banned"})
-            data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], "-1", created]
+            try:
+                data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], "-1", created]
+            except KeyError as e:
+                return jsonify({"code": "err", "message": f"Missing required partner information: {e}"})
             mail = partner['mail']
             insert_links_data(config.conn,data,mail)
         return jsonify({"code": "ok", "message": "Data has been modified successfully"})

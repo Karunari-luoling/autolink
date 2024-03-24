@@ -24,10 +24,22 @@ fentch_time:
 # 接口说明
 ## /autolink
 `ip/autolink`
-此处返还你的友链json，你可以根据这个json去适配你的主题
+此处返还你的友链json，你可以根据这个json去适配你的主题，第一个api不返回详细信息，第二个api当存在正确的Authorization时，会返回详细的友链内容
 示例：
 ```js
 fetch("ip/autolink")
+  .then(response => response.json())
+  .then(json => {
+    console.log(json)
+  }).catch(err => console.log('Request Failed', err));
+```
+
+```js
+let token = localStorage.getItem('token')
+fetch('ip/autolink',{
+    method: 'POST',
+    headers: {'Authorization': token},
+  })
   .then(response => response.json())
   .then(json => {
     console.log(json)
@@ -78,6 +90,7 @@ fetch("ip/autolink")
 ```
 state = 2 是正常访问的友链（1暂定为优先级最高，默认添加到2）
 state = 0 是黑名单的友链
+state = -1 是黑名单的友链
 
 ## /hexo_circle_of_friends
 `ip/hexo_circle_of_friends`
@@ -156,8 +169,8 @@ fetch('ip/login', {
 "code": 200
 }
 ```
-## /custom
-`ip/custom`
+## /insert_links
+`ip/insert_links`
 此api用于修改和提交友链，以及提交黑名单，处于黑名单时，以存在的友链的state为0
 示例:
 ```js
@@ -177,7 +190,7 @@ data =
     "ban": ["github.io"]
     // partners和ban一次只能提交一种，返回的是各自对应的值
 }
-fetch('ip/custom', {
+fetch('ip/insert_links', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'
@@ -223,6 +236,68 @@ fetch('ip/custom', {
     "github.io"
   ]
 }
+```
+## /upload
+`ip/upload`
+此api用于在博客中给用户自己添加友链的权限，提交的友链的权限为-1，示例代码如下
+```js
+let obj = {
+        "partners": [
+          {
+              "avatar": "",
+              "descr": "",
+              "link": "",
+              "mail": "",
+              "name": "",
+              "siteshot": ""
+          }
+      ]
+    };
+fetch('ip/upload', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: obj
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(json)
+  }).catch(err => console.log('Request Failed', err));
+```
+返回示例：
+```json
+{"code": "err", "message": "There is no modified data"}
+{"code": "ok", "message": "Data has been modified successfully"}
+```
+
+## /update_links
+`ip/update_links`
+此api用于修改友链的内容，提交需带上token和mail，其余内容随便
+```js
+let token = localStorage.getItem('token')
+data = 
+[{
+  "link": "",
+  "mail": ""
+}]
+fetch('ip/update_links', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+        'Authorization': token
+    },
+    body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(json => {
+        console.log(json)
+    }).catch(err => console.log('Request Failed', err));
+```
+输出如下:
+```json
+{"code": "200", "message": "Data has been modified successfully"}
+{"code": "error", "message": "Missing 'mail' in data"}
 ```
 ## /config
 `ip/config`
