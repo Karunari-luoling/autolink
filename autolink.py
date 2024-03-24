@@ -22,7 +22,5 @@ if __name__ == '__main__':
         run_app(app, basic_settings)
         
         p1.join()
-        # observer_thread = threading.Thread(target=start_observer)
-        # observer_thread.start()
     except KeyboardInterrupt:
         set_should_continue(False)

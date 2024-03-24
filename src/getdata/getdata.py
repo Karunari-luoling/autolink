@@ -3,7 +3,7 @@ import time
 import schedule
 from src.getdata.config import get_enabled_db, getlocaldb
 from src.getdata.process_data import process_data
-from src.utils.database.update_data import update_links_data
+from src.utils.database.insert_data import insert_links_data
 import src.utils.config as config
 
 def run_getdata(db, fentch_time, restart_event):
@@ -29,4 +29,4 @@ def start_getdata(content):
         data = process_data(item)
         if data is not None:
             partners = [data['name'], data['avatar'], data['descr'], data['link'], data['siteshot'], data['state'], data['created']]
-            update_links_data(config.conn, partners, data['mail'])
+            insert_links_data(config.conn, partners, data['mail'])

@@ -2,7 +2,7 @@ from datetime import timezone, datetime
 from src.utils.database.read_data import read_data
 from flask import Blueprint, jsonify, request
 import src.utils.config as config
-from src.utils.database.update_data import update_links_data
+from src.utils.database.insert_data import insert_links_data
 
 upload = Blueprint('upload', __name__)
 
@@ -21,6 +21,6 @@ def upload_view():
                 return jsonify({"code": "err", "message": "The link is banned"})
             data = [partner['name'], partner['avatar'], partner['descr'], partner['link'], partner['siteshot'], "-1", created]
             mail = partner['mail']
-            update_links_data(config.conn,data,mail)
+            insert_links_data(config.conn,data,mail)
         return jsonify({"code": "ok", "message": "Data has been modified successfully"})
     return jsonify({"code": "err", "message": "There is no modified data"})
