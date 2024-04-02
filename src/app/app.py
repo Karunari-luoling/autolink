@@ -1,3 +1,4 @@
+from src.app.api.feishu_callback import feishu_callback
 from src.app.api.upload import upload
 from src.app.api.update_links import update_links
 import os
@@ -10,6 +11,7 @@ from src.app.api.delete import delete
 from src.app.api.config_change import config
 from src.app.api.links_and_friends import links_and_friends
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from src.utils.server_status import server_status
 
 app = Flask(__name__)
 root_dir = os.path.abspath('.')
@@ -26,7 +28,7 @@ def handle_server_error(e):
 
 @app.before_request
 def before():
-    if request.path not in ['/autolink', '/hexo_circle_of_friends', '/insert_links', '/login', '/test','/config','/delete','/upload','/update_links'] and request.method != 'OPTIONS':
+    if request.path not in ['/autolink', '/hexo_circle_of_friends', '/insert_links', '/login', '/test','/config','/delete','/upload','/update_links','/feishu_callback'] and request.method != 'OPTIONS':
         return jsonify({"code": "正常", "message": "{}".format("输入正确参数")})
 
 app.register_blueprint(login)
@@ -36,3 +38,5 @@ app.register_blueprint(insert_links)
 app.register_blueprint(delete)
 app.register_blueprint(upload)
 app.register_blueprint(update_links)
+if server_status("feishu"):
+    app.register_blueprint(feishu_callback)

@@ -1,11 +1,15 @@
 import json
+from flask import g
 import yaml
 from ruamel.yaml import YAML
 import sqlite3
 from src.utils.database.create_database import check_and_create_database
+from concurrent.futures import ThreadPoolExecutor
 
 db_path = check_and_create_database()
 conn = sqlite3.connect(db_path, check_same_thread=False)
+feishu_callback_list = []
+executor = ThreadPoolExecutor(max_workers=5)
 
 def load_config(file_path):
     with open(file_path, encoding='utf-8') as f:
@@ -32,9 +36,12 @@ def update_config(file_path, key, value):
         yaml.dump(config, f)
     return config
 
-def run_app(app, config):
+def run_app(app, config,shared_dict):
     if config['cors']:
         app.after_request(after_request)
+    @app.before_request
+    def before_request():
+        g.shared_dict = shared_dict
     app.run(debug=config['debug'], host='0.0.0.0', port=config['port'], use_reloader=False)
 
 def after_request(resp):

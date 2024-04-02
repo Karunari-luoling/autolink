@@ -9,13 +9,13 @@ links_and_friends = Blueprint('read_json', __name__)
 def get_data(json_name, include_mail):
     if json_name == "autolink":
         keys = ["mail", "name", "avatar", "descr", "link", "siteshot", "state"] if include_mail else ["name", "avatar", "descr", "link", "siteshot", "state"]
-        data = read_data(config.conn, "links", keys, "state != 0")
+        data = read_data(config.conn, "links", keys, "state != 0 AND state != -1")
         data = [dict(zip(keys, item)) for item in data]
         state_values = list(set(item['state'] for item in data))
         return jsonify({"partners": data,"state_list":state_values})
     elif json_name == "hexo_circle_of_friends":
         keys = ["name", "link", "avatar"]
-        data = read_data(config.conn, "links", keys, "state != 0")
+        data = read_data(config.conn, "links", keys, "state != 0 AND state != -1")
         return jsonify({"friends": data})
     else:
         return jsonify({"code": "err", "msg": "暂未开放"})

@@ -1,6 +1,6 @@
-FROM python:3.8
-WORKDIR /app
-COPY . /app
+FROM python:3.8 AS build
+WORKDIR ./autolink
+ADD . .
 RUN pip install --no-cache-dir -r requirements.txt
 ENV NAME AutoLink
 EXPOSE 3000
