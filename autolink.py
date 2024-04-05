@@ -6,13 +6,14 @@ from src.utils.database.create_database import check_and_create_database
 from multiprocessing import Process, Event
 from src.utils.notice.feishu_refreshtoken import feishu_refresh
 from multiprocessing import Process, Manager
+from src.getdata.config import get_enabled_db
 
 if __name__ == '__main__':
     try:
         config = load_config('./config/config.yml')
         basic_settings = config['basic_settings']
-        db = config['basic_settings']['db']
-        fentch_time = config['fentch_time']
+        db = config['get_data']['db']
+        fentch_time = config['get_data']['fentch_time']
         feishu = config['feishu']
 
         restart_event = Event()
@@ -20,8 +21,9 @@ if __name__ == '__main__':
 
         with Manager() as manager:
             shared_dict = manager.dict()
-            p1 = Process(target=run_getdata, args=(db, fentch_time, restart_event))
-            p1.start()
+            if get_enabled_db(db):
+                p1 = Process(target=run_getdata, args=(db, fentch_time, restart_event,shared_dict))
+                p1.start()
             
             if feishu['enable']:
                 p2 = Process(target=feishu_refresh, args=(feishu['app_id'],feishu['app_secret'],shared_dict))
@@ -29,7 +31,8 @@ if __name__ == '__main__':
 
             run_app(app, basic_settings,shared_dict)
             
-            p1.join()
+            if get_enabled_db(db):
+                p1.join()
             if feishu['enable']:
                 p2.join()
     except KeyboardInterrupt:
