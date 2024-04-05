@@ -6,7 +6,6 @@ from src.app.config import get_password, block_token
 import src.app.config as config
 from werkzeug.security import check_password_hash
 
-root_dir = os.path.abspath('.')
 login = Blueprint('login', __name__)
 
 @login.route('/login', methods=['POST'])

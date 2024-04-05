@@ -11,7 +11,6 @@ from src.utils.database.read_data import read_data
 from src.utils.config import load_config
 from src.utils.server_status import server_status
 from src.utils.notice.mail_notice import send_mail
-from concurrent.futures import ThreadPoolExecutor
 
 feishu_callback = Blueprint('feishu_callback', __name__)
 
