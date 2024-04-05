@@ -10,14 +10,14 @@ def process_decorator(func):
             if 'name' and 'avatar' and 'descr' and 'link' in comment:
                 mail = content['mail']
                 created = content['created']
-                state = -1
+                state = -98
 
                 data = func(comment)
 
                 banlink = data['link'].replace('https://', '').replace('http://', '').split('/')[0]
                 banlink = '.'.join(banlink.split('.')[-2:])
                 if banlink in banurl:
-                    state = 0
+                    state = -99
                 data.update({
                     'mail': mail,
                     'state': state,
