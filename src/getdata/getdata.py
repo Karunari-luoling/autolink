@@ -1,6 +1,5 @@
-from email.contentmanager import ContentManager
 import time
-import schedule
+import traceback
 from src.getdata.config import get_enabled_db, getlocaldb
 from src.getdata.process_data import process_data
 from src.utils.database.insert_data import insert_links_data
@@ -11,22 +10,20 @@ from src.utils.server_status import server_status
 from src.utils.notice.mail_notice import send_mail
 
 def run_getdata(db, fentch_time, restart_event,shared_dict):
-    while True:
-        try:
-            if restart_event.is_set():
-                # 清除重启事件并重新开始
-                restart_event.clear()
-            if get_enabled_db(db) == 'local':
-                schedule.every(fentch_time["fentch_interval"]).minutes.do(start_getdata, getlocaldb(db[0]["url"]),shared_dict)
-                schedule.run_all()
-                while True:
-                    schedule.run_pending()
-                    time.sleep(60)
-            elif get_enabled_db(db) == 'mongodb':
-                print('mongodb')
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            #break  # 如果发生错误，退出循环
+    if restart_event.is_set():
+        # 清除重启事件并重新开始
+        restart_event.clear()
+    if get_enabled_db(db) == 'local':
+        while True:
+            try:
+                start_getdata(getlocaldb(db[0]["url"]),shared_dict)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                traceback.print_exc()
+            finally:
+                time.sleep(fentch_time["fentch_interval"]*60)
+    elif get_enabled_db(db) == 'mongodb':
+        print('mongodb')
 
 def start_getdata(content,shared_dict):
     for item in content:
@@ -42,19 +39,22 @@ def start_getdata(content,shared_dict):
                     try:
                         if first_value < data['created']:
                             if server_status("feishu"):
-                                config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
+                                if 'token' in shared_dict:
+                                    config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
                             if server_status("mail"):
                                 config.executor.submit(send_mail, data['mail'], partners,server_status("mail"),"申请友链审核")
                             insert_links_data(config.conn, partners, data['mail'])
                     except Exception as e:
                         if server_status("feishu"):
-                            config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
+                            if 'token' in shared_dict:
+                                config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
                         if server_status("mail"):
                             config.executor.submit(send_mail, data['mail'], partners,server_status("mail"),"申请友链审核")
                         insert_links_data(config.conn, partners, data['mail'])
             else:
                 if server_status("feishu"):
-                    config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
+                    if 'token' in shared_dict:
+                        config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
                 if server_status("mail"):
                     config.executor.submit(send_mail, data['mail'], partners,server_status("mail"),"申请友链审核")
                 insert_links_data(config.conn, partners, data['mail'])
