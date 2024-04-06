@@ -15,8 +15,10 @@ def send_mail(mail, data, smtp_message,subject_message):
         siteshot = data[4]
     else:
         siteshot = "https://image.thum.io/get/width/400/crop/800/allowJPG/wait/20/noanimate/"+data[3]
-    if data[5] == "-1":
+    if data[5] == "-98":
         state = "审核中"
+    elif data[5] == "-99":
+        state = "审核拒绝"
     else:
         state = "审核通过"
     try:
