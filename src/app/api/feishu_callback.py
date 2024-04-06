@@ -83,11 +83,11 @@ def process_action(action, review_links, target_mail, target_link, target_sitesh
             item['avatar'] = target_avatar
             item['descr'] = target_descr
         elif action == 'refuse':
-            item['state'] = 0
+            item['state'] = -99
         elif action == 'refresh':
             item['link'] = target_link
             item['siteshot'] = target_siteshot
-            item['state'] = -1
+            item['state'] = -98
             item['name'] = target_name
             item['avatar'] = target_avatar
             item['descr'] = target_descr
