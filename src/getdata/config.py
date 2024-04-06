@@ -12,8 +12,9 @@ def get_enabled_db(config):
 def getlocaldb(url):
     copy(url, './data/db.json')
     content = []
-    for line in open("./data/db.json", 'r', encoding='utf-8', errors='ignore'):
-        content.append(json.loads(line))
+    with open("./data/db.json", 'r', encoding='utf-8', errors='ignore') as file:
+        for line in file:
+            content.append(json.loads(line))
     return content
 
 def get_match(pattern, string):
