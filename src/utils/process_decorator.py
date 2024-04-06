@@ -7,7 +7,7 @@ def process_decorator(func):
         banurl = [item[0] for item in banurl]
         if content['url'] == '/link/':
             comment = content.get('comment').replace('  ', ' ')
-            if 'name' and 'avatar' and 'descr' and 'link' in comment:
+            if 'name' in comment and 'avatar' in comment and 'descr' in comment and 'link' in comment:
                 mail = content['mail']
                 created = content['created']
                 state = -98
