@@ -1,4 +1,5 @@
 import time
+import traceback
 import requests
 import json
 
@@ -17,5 +18,11 @@ def feishu_refreshtoken(app_id,app_secret,shared_dict):
     shared_dict["token"] = token
 
 def feishu_refresh(app_id,app_secret,shared_dict):
-    feishu_refreshtoken(app_id, app_secret, shared_dict)  
-    time.sleep(3600)
+    while True:
+        try:
+            feishu_refreshtoken(app_id, app_secret, shared_dict)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            traceback.print_exc()
+        finally:
+            time.sleep(3600)
