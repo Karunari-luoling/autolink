@@ -19,21 +19,19 @@ if __name__ == '__main__':
         restart_event = Event()
         check_and_create_database()
 
-        with Manager() as manager:
-            shared_dict = manager.dict()
-            if get_enabled_db(db):
-                p1 = Process(target=run_getdata, args=(db, fentch_time, restart_event,shared_dict))
-                p1.start()
-            
-            if feishu['enable']:
-                p2 = Process(target=feishu_refresh, args=(feishu['app_id'],feishu['app_secret'],shared_dict))
-                p2.start()
+        if get_enabled_db(db):
+            p1 = Process(target=run_getdata, args=(db, fentch_time, restart_event))
+            p1.start()
+        
+        if feishu['enable']:
+            p2 = Process(target=feishu_refresh, args=(feishu['app_id'],feishu['app_secret']))
+            p2.start()
 
-            run_app(app, basic_settings,shared_dict)
-            
-            if get_enabled_db(db):
-                p1.join()
-            if feishu['enable']:
-                p2.join()
+        run_app(app, basic_settings)
+        
+        if get_enabled_db(db):
+            p1.join()
+        if feishu['enable']:
+            p2.join()
     except KeyboardInterrupt:
         set_should_continue(False)

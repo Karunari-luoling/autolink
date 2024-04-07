@@ -45,3 +45,14 @@ def insert_ban_data(conn, link):
     """
     conn.execute(insert_or_ignore_sql, (link,))
     conn.commit()
+
+def insert_feishu_token(conn, token, expire):
+    delete_sql = "DELETE FROM feishu_token"
+    conn.execute(delete_sql)
+    
+    insert_sql = """
+    INSERT INTO feishu_token (token, expire)
+    VALUES (?, ?)
+    """
+    conn.execute(insert_sql, (token, expire,))
+    conn.commit()

@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, abort, jsonify, request
+from flask import Blueprint, jsonify, request
 from src.utils.config import load_config, update_config
 from src.utils.token_required import token_required
 

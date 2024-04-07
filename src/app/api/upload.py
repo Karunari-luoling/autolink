@@ -1,6 +1,6 @@
 from datetime import timezone, datetime
 from src.utils.database.read_data import read_data
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, jsonify, request
 import src.utils.config as config
 from src.utils.database.insert_data import insert_links_data
 from src.utils.notice.feishu_upload_images import upload_feishu_image
@@ -11,9 +11,9 @@ upload = Blueprint('upload', __name__)
 
 @upload.route('/upload', methods=['POST'])
 def upload_view():
-    feishu_token = g.shared_dict.get('token')
     banurl = read_data(config.conn, "ban", None, None)
     banurl = [item[0] for item in banurl]
+    feishu_token = read_data(config.conn, "feishu_token", "token", None)[0][0]
     json_data = request.get_json()
     partners = json_data["partners"]
     if partners != []:

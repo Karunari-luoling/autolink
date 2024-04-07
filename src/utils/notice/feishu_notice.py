@@ -2,6 +2,7 @@ import json
 import os
 import requests
 import src.utils.config as config
+from src.utils.database.update_data import update_links_data
 
 def feishu_notice(title, data, mail,feishu_token,siteshot,avatar):
     root_dir = os.path.abspath('.')
@@ -19,7 +20,10 @@ def feishu_notice(title, data, mail,feishu_token,siteshot,avatar):
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     message_id = response.json()['data']['message_id']
-    result = {"message_id": message_id, "mail": mail,"name": data[0], "avatar": data[1], "descr": data[2], "link": data[3], "siteshot": data[4], "state": data[5], "created":data[6]}
-    config.feishu_callback_list.append(result)
+    result = {
+        "message_id": message_id,
+        "mail": mail
+    }
+    update_links_data(config.conn, result)
 
 

@@ -17,12 +17,19 @@ def create_database():
                 link TEXT NOT NULL,
                 siteshot TEXT,
                 state INTEGER NOT NULL,
-                created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                message_id TEXT
             )
         """,
         "ban": """
             CREATE TABLE IF NOT EXISTS ban (
                 link TEXT PRIMARY KEY
+            )
+        """,
+        "feishu_token": """
+            CREATE TABLE IF NOT EXISTS feishu_token (
+                token TEXT,
+                expire integer
             )
         """
     }

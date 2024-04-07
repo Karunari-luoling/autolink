@@ -9,14 +9,14 @@ from src.utils.notice.feishu_upload_images import upload_feishu_image
 from src.utils.server_status import server_status
 from src.utils.notice.mail_notice import send_mail
 
-def run_getdata(db, fentch_time, restart_event,shared_dict):
+def run_getdata(db, fentch_time, restart_event):
     if restart_event.is_set():
         # 清除重启事件并重新开始
         restart_event.clear()
     if get_enabled_db(db) == 'local':
         while True:
             try:
-                start_getdata(getlocaldb(db[0]["url"]),shared_dict)
+                start_getdata(getlocaldb(db[0]["url"]))
             except Exception as e:
                 print(f"An error occurred: {e}")
                 traceback.print_exc()
@@ -25,7 +25,8 @@ def run_getdata(db, fentch_time, restart_event,shared_dict):
     elif get_enabled_db(db) == 'mongodb':
         print('mongodb')
 
-def start_getdata(content,shared_dict):
+def start_getdata(content):
+    feishu_token = read_data(config.conn, "feishu_token", "token", None)[0][0]
     for item in content:
         data = process_data(item)
         if data is not None:
@@ -39,22 +40,22 @@ def start_getdata(content,shared_dict):
                     try:
                         if first_value < data['created']:
                             if server_status("feishu"):
-                                if 'token' in shared_dict:
-                                    config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
+                                if feishu_token:
+                                    config.executor.submit(upload_feishu_image, feishu_token, data['mail'], partners)
                             if server_status("mail"):
                                 config.executor.submit(send_mail, data['mail'], partners,server_status("mail"),"申请友链审核")
                             insert_links_data(config.conn, partners, data['mail'])
                     except Exception as e:
                         if server_status("feishu"):
-                            if 'token' in shared_dict:
-                                config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
+                            if feishu_token:
+                                config.executor.submit(upload_feishu_image, feishu_token, data['mail'], partners)
                         if server_status("mail"):
                             config.executor.submit(send_mail, data['mail'], partners,server_status("mail"),"申请友链审核")
                         insert_links_data(config.conn, partners, data['mail'])
             else:
                 if server_status("feishu"):
-                    if 'token' in shared_dict:
-                        config.executor.submit(upload_feishu_image, shared_dict['token'], data['mail'], partners)
+                    if feishu_token:
+                        config.executor.submit(upload_feishu_image, feishu_token, data['mail'], partners)
                 if server_status("mail"):
                     config.executor.submit(send_mail, data['mail'], partners,server_status("mail"),"申请友链审核")
                 insert_links_data(config.conn, partners, data['mail'])

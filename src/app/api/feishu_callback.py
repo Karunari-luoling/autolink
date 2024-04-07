@@ -49,57 +49,28 @@ def webhook_event():
         return jsonify({"challenge": decrypted_dict['challenge']})
     else:
         message_id = decrypted_dict['event']['context']['open_message_id']
-        target_mail = None
-        keys = ["mail", "name", "avatar", "descr", "link", "siteshot", "state"]
-        if config.feishu_callback_list is None or config.feishu_callback_list == []:
+        item = read_data(config.conn, "links", None, "message_id == '"+message_id+"'")
+        if len(item) > 0:
+            item = item[0]
+            action = decrypted_dict['event']['action']['value']
+            if action == 'agree':
+                state = 2
+            elif action == 'refuse':
+                state = -99
+            elif action == 'refresh':
+                state = -98
+            feishu_linkdata = {"mail":item[1],"state":state}
+            created = int(datetime.now(timezone.utc).timestamp() * 1000)
+            config.executor.submit(update_links_data,config.conn, feishu_linkdata)
+            if server_status("mail"):
+                partner = [item[2], item[3], item[4], item[5], item[6], item[7], created]
+                config.executor.submit(send_mail, item[1], partner,server_status("mail"),"申请友链成功")
+            return jsonify({
+                "toast": {
+                    "type": "success",
+                    "content": "同意成功" if action == 'agree' else "拒绝成功" if action == 'refuse' else "重新审核"
+                }
+            })
+        else:
             print("No data to process")
             return jsonify({"code": "err", "message": "No data to process"})
-        for item in config.feishu_callback_list:
-            if item['message_id'] == message_id:
-                target_mail = item['mail']
-                target_name = item['name']
-                target_avatar = item['avatar']
-                target_descr = item['descr']
-                target_link = item['link']
-                target_siteshot = item['siteshot']
-                break
-        if target_mail is not None:
-            review_links = read_data(config.conn, "links", keys, f"mail = '{target_mail}'")
-            review_links = [dict(zip(keys, item)) for item in review_links]
-            action = decrypted_dict['event']['action']['value']
-            return process_action(action, review_links, target_mail, target_link, target_siteshot, target_name, target_avatar, target_descr)
-
-def process_action(action, review_links, target_mail, target_link, target_siteshot, target_name, target_avatar, target_descr):
-    created = int(datetime.now(timezone.utc).timestamp() * 1000)
-    for item in review_links:
-        item['mail'] = target_mail
-        item['created'] = created
-
-        if action == 'agree':
-            item['link'] = target_link
-            item['siteshot'] = target_siteshot
-            item['state'] = 2
-            item['name'] = target_name
-            item['avatar'] = target_avatar
-            item['descr'] = target_descr
-        elif action == 'refuse':
-            item['state'] = -99
-        elif action == 'refresh':
-            item['link'] = target_link
-            item['siteshot'] = target_siteshot
-            item['state'] = -98
-            item['name'] = target_name
-            item['avatar'] = target_avatar
-            item['descr'] = target_descr
-
-        config.executor.submit(update_links_data,config.conn, item)
-        if server_status("mail"):
-            data = [target_name, target_avatar, target_descr, target_link, target_siteshot, "2", created]
-            config.executor.submit(send_mail, item['mail'], data,server_status("mail"),"申请友链成功")
-
-    return jsonify({
-        "toast": {
-            "type": "success",
-            "content": "同意成功" if action == 'agree' else "拒绝成功" if action == 'refuse' else "重新审核"
-        }
-    })
